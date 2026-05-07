@@ -27,6 +27,12 @@ export const Login: React.FC = () => {
     return () => clearInterval(interval);
   }, [lockoutTimer]);
 
+  useEffect(() => {
+    if (lockoutTimer === 0 && error.includes('Security Alert')) {
+      setError('');
+    }
+  }, [lockoutTimer, error]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
