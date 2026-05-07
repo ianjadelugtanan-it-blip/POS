@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AppContextProvider, useAppContext } from './context/AppContext';
+import { useAppContext } from './context/AppContext';
+import { AppContextProvider } from './context/AppContextProvider';
 import { Login } from './components/Login';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/admin/Dashboard';

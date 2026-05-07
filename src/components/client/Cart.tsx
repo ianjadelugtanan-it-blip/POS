@@ -30,8 +30,7 @@ export const Cart: React.FC<CartProps> = ({ onProceedToCheckout }) => {
   };
 
   const subtotal = clientCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  const total = subtotal;
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col card overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -102,10 +101,6 @@ export const Cart: React.FC<CartProps> = ({ onProceedToCheckout }) => {
           <div className="flex justify-between">
             <span>Subtotal</span>
             <span className="font-mono text-gray-900">₱{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between border-b border-gray-200 pb-3">
-            <span>Estimated Tax (10%)</span>
-            <span className="font-mono text-gray-900">₱{tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center pt-2">
             <span className="text-gray-900 font-bold">Total</span>

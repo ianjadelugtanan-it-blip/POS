@@ -9,18 +9,26 @@ interface CheckoutProps {
 }
 
 export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplete }) => {
-  const { user, clientCart, setClientCart, orders, setOrders } = useAppContext();
+  const { user, clientCart, setClientCart, orders, setOrders, products, setProducts } = useAppContext();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [contact, setContact] = useState('');
 
   const subtotal = clientCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  const total = subtotal;
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !address || !contact || clientCart.length === 0) return;
+
+    // Deduct stock from inventory
+    const updatedProducts = products.map(product => {
+      const cartItem = clientCart.find(item => item.id === product.id);
+      if (cartItem) {
+        return { ...product, stock: Math.max(0, product.stock - cartItem.quantity) };
+      }
+      return product;
+    });
 
     const newOrder: Order = {
       id: Math.random().toString(36).substring(2, 9).toUpperCase(),
@@ -34,6 +42,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
       date: new Date().toISOString()
     };
 
+    setProducts(updatedProducts);
     setOrders([newOrder, ...orders]);
     setClientCart([]);
     onOrderComplete();
@@ -145,10 +154,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
               <span className="font-mono text-gray-900">₱{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between border-b border-gray-200 pb-4">
-              <span>Tax (10%)</span>
-              <span className="font-mono text-gray-900">₱{tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2">
               <span className="text-gray-900 font-bold">Total</span>
               <span className="text-2xl font-bold text-gray-900 font-mono">₱{total.toFixed(2)}</span>
             </div>

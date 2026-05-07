@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
@@ -7,6 +7,12 @@ export const OrderManagement: React.FC = () => {
   const { orders, setOrders } = useAppContext();
   const [activeOrderForETA, setActiveOrderForETA] = useState<string | null>(null);
   const [etaDate, setEtaDate] = useState('');
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+
+  const handleDeleteOrder = (id: string) => {
+    setOrders(orders.filter(o => o.id !== id));
+    setOrderToDelete(null);
+  };
 
   const handleProcessClick = (id: string) => {
     setActiveOrderForETA(id);
@@ -112,6 +118,15 @@ export const OrderManagement: React.FC = () => {
                          Complete
                        </button>
                      )}
+                     {order.status === 'completed' && (
+                       <button 
+                         onClick={() => setOrderToDelete(order.id)}
+                         className="px-4 py-2 bg-white text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-50 hover:border-red-200 shadow-sm transition-all flex items-center gap-2"
+                       >
+                         <Trash2 className="w-4 h-4" />
+                         Delete Record
+                       </button>
+                     )}
                   </div>
                 </div>
              </div>
@@ -176,6 +191,44 @@ export const OrderManagement: React.FC = () => {
                 }`}
               >
                 Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {orderToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={() => setOrderToDelete(null)}>
+          <div 
+            className="bg-white rounded-2xl p-6 max-w-[360px] w-full shadow-2xl transform transition-all border border-gray-100 animate-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <button onClick={() => setOrderToDelete(null)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-900 mb-2 tracking-tight">Delete Order Record?</h3>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              This will permanently remove the record for order <span className="font-mono font-bold text-gray-700">#{orderToDelete}</span>. This action is irreversible.
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setOrderToDelete(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleDeleteOrder(orderToDelete)}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-sm text-sm"
+              >
+                Delete
               </button>
             </div>
           </div>

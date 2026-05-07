@@ -21,7 +21,13 @@ export const Login: React.FC = () => {
     let interval: any;
     if (lockoutTimer > 0) {
       interval = setInterval(() => {
-        setLockoutTimer((prev) => prev - 1);
+        setLockoutTimer((prev) => {
+          if (prev <= 1) {
+            setError(''); // Clear error when timer ends
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -56,7 +62,7 @@ export const Login: React.FC = () => {
       if (newAttempts >= 5) {
         setLockoutTimer(30); // 30 seconds cooldown
         setLoginAttempts(0);
-        setError('Security Alert: Too many failed attempts. Cooldown triggered for 30 seconds to prevent brute-force attacks.');
+        setError('Too many failed attempts. Please try again after the cooldown.');
       } else {
         setLoginAttempts(newAttempts);
         setError(`Incorrect username or password. (${5 - newAttempts} attempts left)`);
@@ -216,7 +222,7 @@ export const Login: React.FC = () => {
                 <button 
                   type="submit" 
                   disabled={lockoutTimer > 0}
-                  className={`w-full py-3 text-sm flex items-center justify-center transition-all ${lockoutTimer > 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed rounded-lg font-bold' : 'btn-primary'}`}
+                  className={`w-full py-3 text-sm flex items-center justify-center ${lockoutTimer > 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed rounded-lg font-bold' : 'btn-primary'}`}
                 >
                   {lockoutTimer > 0 ? `Locked Out (${lockoutTimer}s)` : (isLogin ? 'Sign In' : 'Create Account')}
                 </button>

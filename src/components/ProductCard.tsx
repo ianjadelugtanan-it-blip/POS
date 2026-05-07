@@ -71,9 +71,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
           <img 
             src={product.imageUrl} 
             alt={product.name} 
-            className={`w-full h-full object-cover ease-out ${
-              variant === 'shop' ? 'transition-transform duration-700 group-hover:scale-105' : ''
-            } ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+            className={`w-full h-full object-cover bg-gray-50 ease-out transition-all duration-700 group-hover:scale-105 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100/50">

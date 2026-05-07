@@ -23,7 +23,6 @@ export interface Transaction {
   id: string;
   items: CartItem[];
   total: number;
-  tax: number;
   date: string;
 }
 

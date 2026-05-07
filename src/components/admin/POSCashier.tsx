@@ -9,7 +9,6 @@ export const POSCashier: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const cartTotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = cartTotal * 0.12;
 
   const handleAddToCart = (product: Product, quantity: number) => {
     setPosCart(prev => {
@@ -45,8 +44,7 @@ export const POSCashier: React.FC = () => {
     const transaction: Transaction = {
       id: Math.random().toString(36).substring(2, 9).toUpperCase(),
       items: [...posCart],
-      total: cartTotal + tax,
-      tax: tax,
+      total: cartTotal,
       date: new Date().toISOString()
     };
 
@@ -116,10 +114,6 @@ export const POSCashier: React.FC = () => {
 
       {/* POS Cart Sidebar Area */}
       <div className="w-full lg:w-96 flex flex-col h-full bg-[#fafafa] rounded-[2rem] shadow-inner border border-gray-100 overflow-hidden relative isolate">
-         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none -z-10">
-            <ShoppingCart className="w-48 h-48 text-black" />
-         </div>
-
          <div className="p-6 border-b border-gray-200">
            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
              <ShoppingCart className="w-5 h-5"/> Current Order
@@ -167,17 +161,9 @@ export const POSCashier: React.FC = () => {
 
          <div className="p-6 bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.02)]">
            <div className="space-y-3 mb-6 relative">
-              <div className="flex justify-between text-sm font-semibold text-gray-500">
-                <span>Subtotal</span>
-                <span>₱{cartTotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm font-semibold text-gray-500 pb-4 border-b border-gray-100">
-                <span>VAT (12%)</span>
-                <span>₱{tax.toFixed(2)}</span>
-              </div>
               <div className="flex justify-between items-end pt-2">
-                <span className="text-gray-900 font-bold">Total Due</span>
-                <span className="text-3xl font-black text-gray-900 tracking-tight">₱{(cartTotal + tax).toFixed(2)}</span>
+                <span className="text-gray-900 font-bold">Total Amount</span>
+                <span className="text-3xl font-black text-gray-900 tracking-tight">₱{cartTotal.toFixed(2)}</span>
               </div>
            </div>
 

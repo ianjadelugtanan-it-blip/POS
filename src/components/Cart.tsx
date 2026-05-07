@@ -11,8 +11,7 @@ interface CartProps {
 
 export const Cart: React.FC<CartProps> = ({ items, onUpdateQuantity, onRemoveItem, onCompleteSale }) => {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  const total = subtotal;
 
   return (
     <div className="w-full h-[calc(100vh-140px)] sticky top-8 flex flex-col card overflow-hidden">
@@ -81,12 +80,8 @@ export const Cart: React.FC<CartProps> = ({ items, onUpdateQuantity, onRemoveIte
             <span>Subtotal</span>
             <span className="font-mono text-gray-700">₱{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-gray-500">
-            <span>Tax (10%)</span>
-            <span className="font-mono text-gray-700">₱{tax.toFixed(2)}</span>
-          </div>
           <div className="flex justify-between text-lg font-bold text-gray-900 pt-3 border-t border-gray-200 mt-2">
-            <span>Total</span>
+            <span>Total Amount</span>
             <span>₱{total.toFixed(2)}</span>
           </div>
         </div>
