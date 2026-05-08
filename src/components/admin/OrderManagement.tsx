@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2, ChevronRight } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react';
 import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
@@ -31,7 +31,7 @@ export const OrderManagement: React.FC = () => {
     setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
   };
 
-  const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<any> }> = {
+  const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.ComponentType<{ className?: string }> }> = {
     pending: { text: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: Clock },
     processing: { text: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: RotateCw },
     completed: { text: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: CheckCircle },
