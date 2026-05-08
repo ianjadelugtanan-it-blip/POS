@@ -32,7 +32,7 @@ export const OrderManagement: React.FC = () => {
   };
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<any> }> = {
-    pending: { text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: Clock },
+    pending: { text: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: Clock },
     processing: { text: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: RotateCw },
     completed: { text: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: CheckCircle },
   };
