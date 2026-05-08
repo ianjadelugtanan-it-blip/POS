@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { API_BASE_URL } from '../../context/AppContextProvider';
 
 export const AdminUsersManagement: React.FC = () => {
   const { users, setUsers } = useAppContext();
@@ -8,30 +9,66 @@ export const AdminUsersManagement: React.FC = () => {
   const [newRole, setNewRole] = useState<'admin' | 'client'>('admin');
   const [newPassword, setNewPassword] = useState('');
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUsername.trim() || !newPassword.trim()) {
       alert("Username and Password are required.");
       return;
     }
-    if (users.some(u => u.username === newUsername.trim())) {
-      alert("Username is already taken.");
-      return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username: newUsername.trim(), 
+          role: newRole,
+          password: newPassword.trim()
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Refresh the list from the server
+        const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
+        if (userRes.ok) setUsers(await userRes.json());
+        
+        setNewUsername('');
+        setNewPassword('');
+        alert("Account created successfully!");
+      } else {
+        alert(result.error || "Failed to create account.");
+      }
+    } catch (error) {
+      alert("Connection error. Is XAMPP running?");
     }
-    setUsers([...users, { 
-      username: newUsername.trim(), 
-      role: newRole,
-      password: newPassword.trim()
-    }]);
-    setNewUsername('');
-    setNewPassword('');
   };
 
-  const handleRemoveUser = (usernameToRemove: string) => {
+  const handleRemoveUser = async (usernameToRemove: string) => {
     if (usernameToRemove === 'admin' || usernameToRemove === 'client') {
       alert("System core accounts cannot be removed.");
       return;
     }
-    setUsers(users.filter(u => u.username !== usernameToRemove));
+    
+    if (!confirm(`Are you sure you want to revoke access for ${usernameToRemove}?`)) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/remove.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: usernameToRemove })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setUsers(users.filter(u => u.username !== usernameToRemove));
+      } else {
+        alert(result.error || "Failed to remove user.");
+      }
+    } catch (error) {
+      alert("Connection error. Is XAMPP running?");
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { API_BASE_URL } from '../context/AppContextProvider';
 import { Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -13,6 +14,7 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
@@ -39,44 +41,71 @@ export const Login: React.FC = () => {
     }
   }, [lockoutTimer, error]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (lockoutTimer > 0) return; // Block submissions if on cooldown
+    if (lockoutTimer > 0) return;
     
     setError('');
+    setIsLoading(true);
 
-    if (isLogin) {
-      const validUser = users.find(u => u.username === username);
-      
-      if (validUser) {
-          const expectedPassword = validUser.password || `${validUser.username}123`;
-          if (password === expectedPassword) {
-            setLoginAttempts(0); // Reset attempts on successful login
-            setUser({ username: validUser.username, role: validUser.role });
-            return;
+    try {
+      if (isLogin) {
+        const response = await fetch(`${API_BASE_URL}/auth/login.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          setLoginAttempts(0);
+          setUser(result.user);
+        } else {
+          const newAttempts = loginAttempts + 1;
+          if (newAttempts >= 5) {
+            setLockoutTimer(30);
+            setLoginAttempts(0);
+            setError('Too many failed attempts. Cooldown activated.');
+          } else {
+            setLoginAttempts(newAttempts);
+            setError(result.error || `Incorrect credentials. (${5 - newAttempts} left)`);
           }
-      }
-      
-      const newAttempts = loginAttempts + 1;
-      if (newAttempts >= 5) {
-        setLockoutTimer(30); // 30 seconds cooldown
-        setLoginAttempts(0);
-        setError('Too many failed attempts. Please try again after the cooldown.');
+        }
       } else {
-        setLoginAttempts(newAttempts);
-        setError(`Incorrect username or password. (${5 - newAttempts} attempts left)`);
+        if (!username || !password || !confirmPassword) {
+          setError('Please fill out all fields.');
+          setIsLoading(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          setError('Passwords do not match.');
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/auth/register.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role: 'client' })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          // Auto-login or switch to login mode
+          setIsLogin(true);
+          setError('');
+          alert('Registration successful! Please login.');
+        } else {
+          setError(result.error || 'Registration failed.');
+        }
       }
-    } else {
-      if (!name || !username || !password || !confirmPassword) {
-        setError('Please fill out all fields.');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match.');
-        return;
-      }
-      setUser({ username, role: 'client' });
+    } catch (err) {
+      setError('Connection to server failed. Is XAMPP running?');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -221,10 +250,12 @@ export const Login: React.FC = () => {
               <div className="pt-2">
                 <button 
                   type="submit" 
-                  disabled={lockoutTimer > 0}
+                  disabled={lockoutTimer > 0 || isLoading}
                   className={`w-full py-3 text-sm flex items-center justify-center ${lockoutTimer > 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed rounded-lg font-bold' : 'btn-primary'}`}
                 >
-                  {lockoutTimer > 0 ? `Locked Out (${lockoutTimer}s)` : (isLogin ? 'Sign In' : 'Create Account')}
+                  {lockoutTimer > 0 ? `Locked Out (${lockoutTimer}s)` : 
+                   isLoading ? (isLogin ? 'Signing In...' : 'Creating Account...') : 
+                   (isLogin ? 'Sign In' : 'Create Account')}
                 </button>
               </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import type { Product, Transaction } from '../../types';
 import { useAppContext } from '../../context/AppContext';
+import { API_BASE_URL } from '../../context/AppContextProvider';
 import { ProductCard } from '../ProductCard';
 
 export const POSCashier: React.FC = () => {
@@ -37,30 +38,39 @@ export const POSCashier: React.FC = () => {
     setPosCart(posCart.filter(item => item.id !== productId));
   };
 
-  const handleCompleteSale = () => {
+  const handleCompleteSale = async () => {
     if (posCart.length === 0) return;
 
-    // Create transaction record
-    const transaction: Transaction = {
-      id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+    const orderData = {
+      id: `TRX-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+      customerName: 'Walk-in Customer',
       items: [...posCart],
       total: cartTotal,
-      date: new Date().toISOString()
+      status: 'completed',
+      date: new Date().toISOString().slice(0, 19).replace('T', ' ') // SQL Format
     };
 
-    // Update real inventory stock
-    const updatedProducts = products.map(product => {
-      const cartItem = posCart.find(item => item.id === product.id);
-      if (cartItem) {
-        return { ...product, stock: product.stock - cartItem.quantity };
-      }
-      return product;
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/create.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
 
-    setProducts(updatedProducts);
-    setTransactions(prev => [...prev, transaction]);
-    setPosCart([]);
-    alert("Transaction Successful!");
+      if (response.ok) {
+        // Refresh products to get updated stock
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+
+        setPosCart([]);
+        alert("Transaction Successful and Stock Updated!");
+      } else {
+        const result = await response.json();
+        alert(result.error || "Transaction failed.");
+      }
+    } catch (error) {
+      alert("Connection error. Sale not recorded.");
+    }
   };
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));

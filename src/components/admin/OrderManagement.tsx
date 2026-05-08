@@ -3,6 +3,7 @@ import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon
 import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
+import { API_BASE_URL } from '../../context/AppContextProvider';
 
 export const OrderManagement: React.FC = () => {
   const { orders, setOrders } = useAppContext();
@@ -10,9 +11,20 @@ export const OrderManagement: React.FC = () => {
   const [etaDate, setEtaDate] = useState('');
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
-  const handleDeleteOrder = (id: string) => {
-    setOrders(orders.filter(o => o.id !== id));
-    setOrderToDelete(null);
+  const handleDeleteOrder = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/delete.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (response.ok) {
+        setOrders(orders.filter(o => o.id !== id));
+        setOrderToDelete(null);
+      }
+    } catch (error) {
+      alert("Error deleting order.");
+    }
   };
 
   const handleProcessClick = (id: string) => {
@@ -20,15 +32,37 @@ export const OrderManagement: React.FC = () => {
     setEtaDate('');
   };
 
-  const confirmProcessOrder = () => {
+  const confirmProcessOrder = async () => {
     if (activeOrderForETA && etaDate) {
-      setOrders(orders.map(o => o.id === activeOrderForETA ? { ...o, status: 'processing', estimatedArrival: etaDate } : o));
-      setActiveOrderForETA(null);
+      try {
+        const response = await fetch(`${API_BASE_URL}/orders/update.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: activeOrderForETA, status: 'processing', estimatedArrival: etaDate })
+        });
+        if (response.ok) {
+          setOrders(orders.map(o => o.id === activeOrderForETA ? { ...o, status: 'processing', estimatedArrival: etaDate } : o));
+          setActiveOrderForETA(null);
+        }
+      } catch (error) {
+        alert("Error updating order.");
+      }
     }
   };
 
-  const updateOrderStatus = (id: string, newStatus: OrderStatus) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+  const updateOrderStatus = async (id: string, newStatus: OrderStatus) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/update.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus })
+      });
+      if (response.ok) {
+        setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+      }
+    } catch (error) {
+      alert("Error updating status.");
+    }
   };
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.ComponentType<{ className?: string }> }> = {

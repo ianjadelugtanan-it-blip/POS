@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Package, Plus, Trash2, ImagePlus } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
+import { API_BASE_URL } from '../../context/AppContextProvider';
 
 export const Inventory: React.FC = () => {
   const { products, setProducts } = useAppContext();
@@ -24,15 +25,33 @@ export const Inventory: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    setProducts(products.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/delete.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setProducts(products.filter(p => p.id !== id));
+      } else {
+        alert(result.error || "Failed to delete product.");
+      }
+    } catch (error) {
+      alert("Connection error.");
+    }
   };
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price || !stock || !category) return;
 
-    const newProduct: Product = {
+    const productData = {
       id: Math.random().toString(36).substring(2, 9).toUpperCase(),
       name,
       price: parseFloat(price),
@@ -41,11 +60,27 @@ export const Inventory: React.FC = () => {
       imageUrl
     };
     
-    setProducts([newProduct, ...products]);
-    setShowForm(false);
-    
-    // Clear form
-    setName(''); setPrice(''); setStock(''); setCategory(''); setImageUrl('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/save.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+      });
+
+      if (response.ok) {
+        // Refresh product list
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+        
+        setShowForm(false);
+        setName(''); setPrice(''); setStock(''); setCategory(''); setImageUrl('');
+      } else {
+        const result = await response.json();
+        alert(result.error || "Failed to save product.");
+      }
+    } catch (error) {
+      alert("Connection error.");
+    }
   };
 
   return (
