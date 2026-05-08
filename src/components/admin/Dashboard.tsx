@@ -38,8 +38,8 @@ export const Dashboard: React.FC = () => {
              </div>
              <h3 className="font-semibold text-gray-700">Today's Revenue</h3>
           </div>
-          <p className="text-4xl font-bold text-gray-900 mt-auto">
-            ₱{todayTotal.toFixed(2)}
+          <p className="text-4xl font-bold text-[var(--sienna)] mt-auto font-mono tracking-tight">
+            ₱{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
 
@@ -53,8 +53,8 @@ export const Dashboard: React.FC = () => {
              </div>
              <h3 className="font-semibold text-gray-700">Transactions</h3>
           </div>
-          <p className="text-4xl font-bold text-gray-900 mt-auto flex items-end justify-between">
-            {todayTransactions.length} <span className="text-sm font-medium text-green-600 mb-1 flex items-center"><ArrowUpRight className="w-4 h-4 mr-1"/> Active</span>
+          <p className="text-4xl font-bold text-[var(--sienna)] mt-auto flex items-end justify-between font-mono tracking-tight">
+            {todayTransactions.length} <span className="text-sm font-medium text-green-600 mb-1 flex items-center font-sans tracking-normal"><ArrowUpRight className="w-4 h-4 mr-1"/> Active</span>
           </p>
         </div>
 
@@ -69,11 +69,21 @@ export const Dashboard: React.FC = () => {
              <h3 className="font-semibold text-gray-700">Top Product</h3>
           </div>
           <div className="mt-auto">
-             <p className="text-2xl font-bold text-gray-900 leading-tight">
+             <p className={`text-2xl font-bold leading-tight ${topProduct ? 'text-gray-900' : 'text-gray-400 italic font-medium'}`}>
                {topProduct ? topProduct[0] : 'N/A'}
              </p>
-             <p className="text-sm font-medium text-gray-500 mt-1">
-               {topProduct ? `${topProduct[1]} units sold` : 'Waiting for sales data'}
+             <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-1.5">
+               {topProduct ? (
+                 <>
+                   <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                   {topProduct[1]} units sold today
+                 </>
+               ) : (
+                 <>
+                   <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                   Waiting for sales data
+                 </>
+               )}
              </p>
           </div>
         </div>

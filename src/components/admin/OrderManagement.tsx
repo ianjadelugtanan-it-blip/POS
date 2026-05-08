@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2, ChevronRight } from 'lucide-react';
+import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
@@ -145,7 +146,7 @@ export const OrderManagement: React.FC = () => {
       {activeOrderForETA && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={() => setActiveOrderForETA(null)}>
           <div 
-            className="bg-white rounded-2xl p-6 max-w-[360px] w-full shadow-2xl transform transition-all border border-gray-100"
+            className="bg-white rounded-2xl p-6 max-w-[400px] w-full shadow-2xl transform transition-all border border-gray-100 animate-in zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
@@ -163,16 +164,13 @@ export const OrderManagement: React.FC = () => {
             </p>
             
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Arrival Date
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Select Arrival Date
               </label>
-              <input 
-                type="date" 
+              <CalendarPicker 
                 value={etaDate}
-                onChange={e => setEtaDate(e.target.value)}
-                className="input-field w-full cursor-pointer"
-                min={new Date().toISOString().split("T")[0]}
-                required
+                onChange={setEtaDate}
+                minDate={new Date().toISOString().split("T")[0]}
               />
             </div>
             
