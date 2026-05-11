@@ -45,8 +45,10 @@ export const Shop: React.FC = () => {
         </div>
       )}
 
+      {/* Header Section */}
       <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
          <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Available Items</h3>
+         <span className="text-sm font-bold text-gray-500">{products.length} Items</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 gap-y-10">

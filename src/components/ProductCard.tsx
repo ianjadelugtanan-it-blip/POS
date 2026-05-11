@@ -151,14 +151,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
           </div>
         )}
 
-        {/* POS Minimal Info */}
+        {/* POS UI remains similar but cleaner */}
         {variant === 'pos' && (
-          <div className="mt-auto flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
-            <span>{product.stock} in stock</span>
-            {!isOutOfStock && (
-              <span className="font-semibold text-gray-300 border border-gray-100 rounded-md px-1 bg-gray-50">TAP</span>
-            )}
-          </div>
+          <>
+            <p className="text-lg font-bold text-blue-600 mb-1">₱{product.price.toFixed(2)}</p>
+            <div className="mt-auto flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
+              <span>{product.stock} in stock</span>
+              {!isOutOfStock && (
+                <span className="font-semibold text-gray-300 border border-gray-100 rounded-md px-1 bg-gray-50">TAP</span>
+              )}
+            </div>
+          </>
         )}
       </div>
 

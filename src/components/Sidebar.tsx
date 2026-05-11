@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart, LayoutDashboard, Package, ClipboardList, Store, LogOut, Users, Activity, X, Shirt } from 'lucide-react';
+import { ShoppingCart, LayoutDashboard, Package, Store, LogOut, Users, Activity, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 interface SidebarProps {
@@ -12,7 +12,7 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
   const { user, logout } = useAppContext();
 
-  const adminNavItems = [
+  const navItems = [
     { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
     { id: 'pos', label: 'POS Cashier', icon: Store },
     { id: 'inventory', label: 'Inventory', icon: Package },
@@ -20,14 +20,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
     { id: 'sales-report', label: 'Sales Report', icon: Activity },
     { id: 'users', label: 'Manage Staff', icon: Users },
   ];
-
-  const clientNavItems = [
-    { id: 'shop', label: 'Browse Items', icon: Shirt },
-    { id: 'cart', label: 'My Cart', icon: ShoppingCart },
-    { id: 'my-orders', label: 'My Orders', icon: ClipboardList },
-  ];
-
-  const navItems = user?.role === 'admin' ? adminNavItems : clientNavItems;
 
   const handleTabSelect = (id: string) => {
     setActiveTab(id);
@@ -79,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
         {/* Role badge */}
         <div className="px-5 pt-5 pb-2">
           <p className="text-[10px] uppercase font-bold tracking-widest mb-3" style={{ color: 'rgba(242,234,216,0.35)' }}>
-            {user?.role === 'admin' ? 'Staff Menu' : 'Shopper Menu'}
+            Staff Menu
           </p>
         </div>
 
