@@ -34,6 +34,7 @@ try {
             'status' => $order['status'],
             'date' => $order['date'],
             'estimatedArrival' => $order['estimated_arrival'],
+            'username' => $order['username'],
             'items' => array_map(function($i) {
                 return [
                     'id' => $i['product_id'],

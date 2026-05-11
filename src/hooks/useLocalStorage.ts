@@ -7,7 +7,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
+    } catch {
       return initialValue;
     }
   });
@@ -17,11 +17,12 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStoredValue(JSON.parse(item));
       } else {
         setStoredValue(initialValue);
       }
-    } catch (error) {
+    } catch {
       setStoredValue(initialValue);
     }
   }, [key, initialValue]);

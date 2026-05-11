@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../context/AppContextProvider';
 import { Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {
-  const { setUser, users } = useAppContext();
+  const { setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   
   const [name, setName] = useState('');
@@ -20,7 +20,7 @@ export const Login: React.FC = () => {
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (lockoutTimer > 0) {
       interval = setInterval(() => {
         setLockoutTimer((prev) => {
@@ -37,6 +37,7 @@ export const Login: React.FC = () => {
 
   useEffect(() => {
     if (lockoutTimer === 0 && error.includes('Security Alert')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError('');
     }
   }, [lockoutTimer, error]);
@@ -102,7 +103,7 @@ export const Login: React.FC = () => {
           setError(result.error || 'Registration failed.');
         }
       }
-    } catch (err) {
+    } catch {
       setError('Connection to server failed. Is XAMPP running?');
     } finally {
       setIsLoading(false);

@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import type { User, Product, Transaction, Order, CartItem } from '../types';
 import { AppContext } from './AppContext';
 
-export const API_BASE_URL = 'http://localhost/api'; // Adjust this to your XAMPP path
+export const API_BASE_URL = 'http://localhost/api'; // Reverted to standard port 80
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // We keep the logged-in user in localStorage for session persistence
   const [user, setUserState] = useState<User | null>(() => {
-    const saved = localStorage.getItem('pos_user');
+    const saved = sessionStorage.getItem('pos_user');
     return saved ? JSON.parse(saved) : null;
   });
 
   const setUser = (user: User | null) => {
     setUserState(user);
-    if (user) localStorage.setItem('pos_user', JSON.stringify(user));
-    else localStorage.removeItem('pos_user');
+    if (user) sessionStorage.setItem('pos_user', JSON.stringify(user));
+    else sessionStorage.removeItem('pos_user');
   };
 
   const [users, setUsers] = useState<User[]>([]);

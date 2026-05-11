@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Plus, Minus, X } from 'lucide-react';
-import type { Product, Transaction } from '../../types';
+import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../context/AppContextProvider';
 import { ProductCard } from '../ProductCard';
 
 export const POSCashier: React.FC = () => {
-  const { products, setProducts, posCart, setPosCart, setTransactions } = useAppContext();
+  const { products, setProducts, posCart, setPosCart, setOrders } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
 
   const cartTotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -42,6 +42,7 @@ export const POSCashier: React.FC = () => {
     if (posCart.length === 0) return;
 
     const orderData = {
+      // eslint-disable-next-line react-hooks/purity
       id: `TRX-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
       customerName: 'Walk-in Customer',
       items: [...posCart],
@@ -58,9 +59,13 @@ export const POSCashier: React.FC = () => {
       });
 
       if (response.ok) {
-        // Refresh products to get updated stock
-        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        // Refresh data
+        const [prodRes, orderRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/products/get.php`),
+          fetch(`${API_BASE_URL}/orders/get.php`)
+        ]);
         if (prodRes.ok) setProducts(await prodRes.json());
+        if (orderRes.ok) setOrders(await orderRes.json());
 
         setPosCart([]);
         alert("Transaction Successful and Stock Updated!");
@@ -68,7 +73,7 @@ export const POSCashier: React.FC = () => {
         const result = await response.json();
         alert(result.error || "Transaction failed.");
       }
-    } catch (error) {
+    } catch {
       alert("Connection error. Sale not recorded.");
     }
   };

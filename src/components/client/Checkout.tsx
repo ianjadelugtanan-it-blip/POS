@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Truck, MapPin, Phone, User, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { API_BASE_URL } from '../../context/AppContextProvider';
 import type { Order } from '../../types';
 
 interface CheckoutProps {
@@ -9,7 +10,7 @@ interface CheckoutProps {
 }
 
 export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplete }) => {
-  const { user, clientCart, setClientCart, orders, setOrders, products, setProducts } = useAppContext();
+  const { user, clientCart, setClientCart, orders, setOrders, setProducts } = useAppContext();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [contact, setContact] = useState('');
@@ -17,18 +18,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
   const subtotal = clientCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal;
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !address || !contact || clientCart.length === 0) return;
-
-    // Deduct stock from inventory
-    const updatedProducts = products.map(product => {
-      const cartItem = clientCart.find(item => item.id === product.id);
-      if (cartItem) {
-        return { ...product, stock: Math.max(0, product.stock - cartItem.quantity) };
-      }
-      return product;
-    });
 
     const newOrder: Order = {
       id: Math.random().toString(36).substring(2, 9).toUpperCase(),
@@ -39,13 +31,35 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
       items: [...clientCart],
       total,
       status: 'pending',
-      date: new Date().toISOString()
+      date: new Date().toISOString().slice(0, 19).replace('T', ' ')
     };
 
-    setProducts(updatedProducts);
-    setOrders([newOrder, ...orders]);
-    setClientCart([]);
-    onOrderComplete();
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/create.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder)
+      });
+
+      if (response.ok) {
+        // Refresh products to get updated stock
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+        
+        // Refresh orders
+        const orderRes = await fetch(`${API_BASE_URL}/orders/get.php`);
+        if (orderRes.ok) setOrders(await orderRes.json());
+        else setOrders([newOrder, ...orders]); // fallback
+
+        setClientCart([]);
+        onOrderComplete();
+      } else {
+        const result = await response.json();
+        alert(result.error || "Order failed.");
+      }
+    } catch {
+      alert("Connection error. Order not placed.");
+    }
   };
 
   return (

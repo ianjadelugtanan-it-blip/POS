@@ -79,7 +79,7 @@ export const SalesReport: React.FC = () => {
                      </td>
                      <td className="p-5">
                        <span className="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 rounded border border-gray-200 bg-white shadow-sm text-xs font-bold text-gray-800">
-                         {t.items.reduce((s: number, i: any) => s + i.quantity, 0)} Pcs
+                         {t.items.reduce((s: number, i: { quantity: number }) => s + i.quantity, 0)} Pcs
                        </span>
                      </td>
                      <td className="p-5 pr-6 text-right font-mono font-bold text-gray-900 text-lg">

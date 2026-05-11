@@ -3,15 +3,21 @@ import { TrendingUp, Package, Tag, ArrowUpRight } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export const Dashboard: React.FC = () => {
-  const { transactions } = useAppContext();
-  const today = new Date().toISOString().split('T')[0];
+  const { orders } = useAppContext();
   
-  const todayTransactions = transactions.filter(t => t.date.startsWith(today));
-  const todayTotal = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+  const todayTransactions = orders.filter(o => {
+    if (o.status !== 'completed') return false;
+    // Database stores UTC string (YYYY-MM-DD HH:MM:SS)
+    // We add 'Z' to make it ISO UTC so JS parses it correctly as UTC and converts to local
+    const orderDate = new Date(o.date.replace(' ', 'T') + 'Z'); 
+    const now = new Date();
+    return orderDate.toDateString() === now.toDateString();
+  });
+  const todayTotal = todayTransactions.reduce((sum, o) => sum + o.total, 0);
 
   const productSales: Record<string, number> = {};
-  transactions.forEach(t => {
-    t.items.forEach(item => {
+  orders.filter(o => o.status === 'completed').forEach(o => {
+    o.items.forEach(item => {
       productSales[item.name] = (productSales[item.name] || 0) + item.quantity;
     });
   });

@@ -8,7 +8,7 @@ export const MyOrders: React.FC = () => {
   
   const myOrders = orders.filter(o => o.username === user?.username);
 
-  const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<any> }> = {
+  const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
     pending: { text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: Clock },
     processing: { text: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: RotateCw },
     completed: { text: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: CheckCircle },

@@ -1,5 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { User, Product, CartItem, Transaction, Order } from '../types';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import { API_BASE_URL } from './AppContextProvider';
 
 export interface AppContextType {
   user: User | null;
@@ -24,8 +26,57 @@ export interface AppContextType {
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useLocalStorage<User | null>('user', null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [posCart, setPosCart] = useState<CartItem[]>([]);
+  const [clientCart, setClientCart] = useState<CartItem[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+        
+        const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
+        if (userRes.ok) setUsers(await userRes.json());
+
+        const orderRes = await fetch(`${API_BASE_URL}/orders/get.php`);
+        if (orderRes.ok) setOrders(await orderRes.json());
+      } catch {
+        console.error("Initial fetch failed.");
+      }
+    };
+    fetchData();
+  }, []);
+
+  const logout = () => {
+    setUser(null);
+  };
+
+  return (
+    <AppContext.Provider value={{
+      user, setUser,
+      users, setUsers,
+      logout,
+      products, setProducts,
+      posCart, setPosCart,
+      clientCart, setClientCart,
+      transactions, setTransactions,
+      orders, setOrders
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {

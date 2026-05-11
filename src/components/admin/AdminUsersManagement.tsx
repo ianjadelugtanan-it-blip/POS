@@ -39,7 +39,7 @@ export const AdminUsersManagement: React.FC = () => {
       } else {
         alert(result.error || "Failed to create account.");
       }
-    } catch (error) {
+    } catch {
       alert("Connection error. Is XAMPP running?");
     }
   };
@@ -66,7 +66,7 @@ export const AdminUsersManagement: React.FC = () => {
       } else {
         alert(result.error || "Failed to remove user.");
       }
-    } catch (error) {
+    } catch {
       alert("Connection error. Is XAMPP running?");
     }
   };

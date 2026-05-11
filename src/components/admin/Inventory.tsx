@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, ImagePlus } from 'lucide-react';
-import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../context/AppContextProvider';
 
@@ -42,7 +41,7 @@ export const Inventory: React.FC = () => {
       } else {
         alert(result.error || "Failed to delete product.");
       }
-    } catch (error) {
+    } catch {
       alert("Connection error.");
     }
   };
@@ -78,7 +77,7 @@ export const Inventory: React.FC = () => {
         const result = await response.json();
         alert(result.error || "Failed to save product.");
       }
-    } catch (error) {
+    } catch {
       alert("Connection error.");
     }
   };

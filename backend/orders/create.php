@@ -24,7 +24,7 @@ try {
     $pdo->beginTransaction();
 
     // 2. Insert into `orders` table
-    $stmt = $pdo->prepare("INSERT INTO orders (id, customer_name, address, contact_number, total, status, date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO orders (id, customer_name, address, contact_number, total, status, date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $order['id'],
         $order['customerName'],
@@ -32,7 +32,8 @@ try {
         $order['contactNumber'] ?? null,
         $order['total'],
         $order['status'] ?? 'pending',
-        $order['date'] ?? date('Y-m-d H:i:s')
+        $order['date'] ?? date('Y-m-d H:i:s'),
+        $order['username'] ?? null
     ]);
 
     // 3. Insert each item into `order_items` table

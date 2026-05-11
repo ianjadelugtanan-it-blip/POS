@@ -5,7 +5,7 @@
  * Error handling is set to throw exceptions for robust error catching.
  */
 
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'pos_db'; // Ensure you create this database in PHPMyAdmin
 $user = 'root';   // XAMPP default
 $pass = '';       // XAMPP default

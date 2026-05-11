@@ -22,7 +22,7 @@ export const OrderManagement: React.FC = () => {
         setOrders(orders.filter(o => o.id !== id));
         setOrderToDelete(null);
       }
-    } catch (error) {
+    } catch {
       alert("Error deleting order.");
     }
   };
@@ -44,7 +44,7 @@ export const OrderManagement: React.FC = () => {
           setOrders(orders.map(o => o.id === activeOrderForETA ? { ...o, status: 'processing', estimatedArrival: etaDate } : o));
           setActiveOrderForETA(null);
         }
-      } catch (error) {
+      } catch {
         alert("Error updating order.");
       }
     }
@@ -60,7 +60,7 @@ export const OrderManagement: React.FC = () => {
       if (response.ok) {
         setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
       }
-    } catch (error) {
+    } catch {
       alert("Error updating status.");
     }
   };
