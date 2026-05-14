@@ -25,18 +25,23 @@ try {
 
     // 2. Insert into `orders` table
     $stmt = $pdo->prepare("INSERT INTO orders (id, customer_name, address, contact_number, total, status, date, username, payment_method, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+    $paymentMethod = $order['paymentMethod'] ?? $order['payment_method'] ?? 'Cash on Delivery';
+    $receiptImage = $order['receiptImage'] ?? $order['receipt_image'] ?? null;
+
     $stmt->execute([
         $order['id'],
-        $order['customerName'],
+        $order['customerName'] ?? $order['customer_name'],
         $order['address'] ?? null,
-        $order['contactNumber'] ?? null,
+        $order['contactNumber'] ?? $order['contact_number'] ?? null,
         $order['total'],
         $order['status'] ?? 'pending',
         $order['date'] ?? date('Y-m-d H:i:s'),
         $order['username'] ?? null,
-        $order['paymentMethod'] ?? 'Cash on Delivery',
-        $order['receiptImage'] ?? null
+        $paymentMethod,
+        $receiptImage
     ]);
+
 
     // 3. Insert each item into `order_items` table and validate stock
     $itemStmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES (?, ?, ?, ?)");

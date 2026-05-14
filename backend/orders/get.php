@@ -42,6 +42,10 @@ try {
             'date' => $order['date'],
             'estimatedArrival' => $order['estimated_arrival'],
             'username' => $order['username'],
+            'paymentMethod' => $order['payment_method'],
+            'receiptImage' => $order['receipt_image'],
+            'declineReason' => $order['decline_reason'],
+
             'items' => array_map(function($i) {
                 return [
                     'id' => $i['product_id'],

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { API_BASE_URL } from '../config';
 import { Eye, EyeOff, Shirt } from 'lucide-react';
+import { SuccessModal } from './ui/SuccessModal';
+
 
 export const Login: React.FC = () => {
   const { setUser } = useAppContext();
@@ -12,9 +14,12 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
+
 
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
@@ -41,6 +46,43 @@ export const Login: React.FC = () => {
       setError('');
     }
   }, [lockoutTimer, error]);
+
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength({ score: 0, label: '', color: '' });
+      return;
+    }
+
+    let score = 0;
+    if (password.length > 6) score++;
+    if (password.length > 10) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    let label = '';
+    let color = '';
+
+    switch (score) {
+      case 0:
+      case 1:
+        label = 'Weak';
+        color = 'text-red-500';
+        break;
+      case 2:
+        label = 'Fair';
+        color = 'text-orange-500';
+        break;
+      case 3:
+        label = 'Good';
+        color = 'text-olive';
+        break;
+      case 4:
+        label = 'Strong';
+        color = 'text-green-600';
+        break;
+    }
+    setPasswordStrength({ score, label, color });
+  }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,13 +137,19 @@ export const Login: React.FC = () => {
         const result = await response.json();
 
         if (response.ok) {
-          // Auto-login or switch to login mode
+          // Clear credentials so they don't persist in login form
+          setUsername('');
+          setPassword('');
+          setConfirmPassword('');
+          setName('');
+          
           setIsLogin(true);
           setError('');
-          alert('Registration successful! Please login.');
+          setShowSuccessModal(true);
         } else {
           setError(result.error || 'Registration failed.');
         }
+
       }
     } catch {
       setError('Connection to server failed. Is XAMPP running?');
@@ -112,6 +160,13 @@ export const Login: React.FC = () => {
 
   return (
     <div className={`sliding-container ${!isLogin ? 'is-registering' : ''}`}>
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)}
+        title="Welcome to The Find!"
+        message="Your account has been created successfully. You can now sign in with your credentials to start your collection of stories."
+      />
+
       
       {/* ── Visual Sliding Overlay ── */}
       <div className="overlay-side flex">
@@ -193,9 +248,18 @@ export const Login: React.FC = () => {
 
            <div className="mt-8 text-center">
              <p className="text-sm text-gray-500">
-               New here? <button onClick={() => { setIsLogin(false); setError(''); }} className="text-sienna font-bold hover:underline">Create an account</button>
+               New here? <button onClick={() => { 
+                 setIsLogin(false); 
+                 setError(''); 
+                 setUsername('');
+                 setPassword('');
+                 setConfirmPassword('');
+                 setName('');
+               }} className="text-sienna font-bold hover:underline">Create an account</button>
+
              </p>
            </div>
+
 
         </div>
       </div>
@@ -236,14 +300,40 @@ export const Login: React.FC = () => {
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Password</label>
                 <div className="relative">
                   <input type={showPassword ? "text" : "password"} required value={password} onChange={(e)=>setPassword(e.target.value)} className="input-field" placeholder="••••••••" />
-                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {passwordStrength.label && (
+                  <div className="flex items-center gap-2 mt-1.5 ml-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((step) => (
+                        <div 
+                          key={step} 
+                          className={`h-1 w-6 rounded-full transition-all duration-300 ${
+                            step <= passwordStrength.score ? (
+                              passwordStrength.score <= 1 ? 'bg-red-400' : 
+                              passwordStrength.score === 2 ? 'bg-orange-400' : 
+                              passwordStrength.score === 3 ? 'bg-olive' : 'bg-green-500'
+                            ) : 'bg-gray-200'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${passwordStrength.color}`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Confirm Password</label>
-                <input type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} className="input-field" placeholder="••••••••" />
+                <div className="relative">
+                  <input type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} className="input-field" placeholder="••••••••" />
+                  <button type="button" onClick={()=>setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <button type="submit" disabled={isLoading} className="w-full btn-primary py-3.5 mt-2">
                 {isLoading ? 'Creating...' : 'Create Account'}
@@ -252,9 +342,18 @@ export const Login: React.FC = () => {
 
            <div className="mt-8 text-center">
              <p className="text-sm text-gray-500">
-               Already have an account? <button onClick={() => { setIsLogin(true); setError(''); }} className="text-sienna font-bold hover:underline">Sign in instead</button>
+               Already have an account? <button onClick={() => { 
+                 setIsLogin(true); 
+                 setError(''); 
+                 setUsername('');
+                 setPassword('');
+                 setConfirmPassword('');
+                 setName('');
+               }} className="text-sienna font-bold hover:underline">Sign in instead</button>
+
              </p>
            </div>
+
         </div>
       </div>
 

@@ -11,6 +11,11 @@ export const OrderManagement: React.FC = () => {
   const [etaDate, setEtaDate] = useState('');
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [receiptView, setReceiptView] = useState<string | null>(null);
+  const [orderToDecline, setOrderToDecline] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [isSubmittingDecline, setIsSubmittingDecline] = useState(false);
+
 
   const filteredOrders = orders.filter(o => 
     o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,11 +77,40 @@ export const OrderManagement: React.FC = () => {
     }
   };
 
+  const handleDeclineOrder = async () => {
+    if (!orderToDecline || !declineReason.trim()) return;
+    setIsSubmittingDecline(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/update.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: orderToDecline, 
+          status: 'declined', 
+          declineReason: declineReason.trim() 
+        })
+      });
+      if (response.ok) {
+        setOrders(orders.map(o => o.id === orderToDecline ? { ...o, status: 'declined', declineReason: declineReason.trim() } : o));
+        setOrderToDecline(null);
+        setDeclineReason('');
+      }
+    } catch {
+      alert("Error declining order.");
+    } finally {
+      setIsSubmittingDecline(false);
+    }
+  };
+
+
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.ComponentType<{ className?: string }> }> = {
     pending: { text: 'text-gray-600', bg: 'bg-gray-50 border-gray-200', icon: Clock },
     processing: { text: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: RotateCw },
     completed: { text: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: CheckCircle },
+    declined: { text: 'text-red-700', bg: 'bg-red-50 border-red-200', icon: X },
+    cancelled: { text: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: Trash2 },
   };
+
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
@@ -122,6 +156,21 @@ export const OrderManagement: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="flex flex-wrap gap-2 mb-6">
+                   <div className="px-3 py-1 bg-parchment border border-sand rounded-lg text-xs font-bold text-brown shadow-sm">
+                      {order.paymentMethod || 'Cash on Delivery'}
+                   </div>
+                   {order.paymentMethod === 'GCash' && order.receiptImage && (
+                      <button 
+                        onClick={() => setReceiptView(order.receiptImage!)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm"
+                      >
+                        View Receipt
+                      </button>
+                   )}
+                </div>
+
+
                 <div className="flex items-start gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg mb-6 border border-gray-100">
                    <MapPin className="w-4 h-4 mt-0.5 text-gray-400 shrink-0" />
                    <p className="leading-snug">{order.address}</p>
@@ -157,13 +206,22 @@ export const OrderManagement: React.FC = () => {
 
                   <div className="flex gap-2">
                      {order.status === 'pending' && (
-                       <button 
-                         onClick={() => handleProcessClick(order.id)}
-                         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm hover:shadow transition-all hover:-translate-y-0.5"
-                       >
-                         Process
-                       </button>
+                       <div className="flex gap-2">
+                          <button 
+                            onClick={() => setOrderToDecline(order.id)}
+                            className="px-4 py-2 bg-white text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-50 hover:border-red-200 transition-all"
+                          >
+                            Decline
+                          </button>
+                          <button 
+                            onClick={() => handleProcessClick(order.id)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm hover:shadow transition-all hover:-translate-y-0.5"
+                          >
+                            Process
+                          </button>
+                       </div>
                      )}
+
                      {order.status === 'processing' && (
                        <button 
                          onClick={() => updateOrderStatus(order.id, 'completed')}
@@ -287,6 +345,85 @@ export const OrderManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Receipt Modal */}
+      {receiptView && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setReceiptView(null)}>
+          <div className="relative max-w-lg w-full bg-white rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900">Payment Verification</h3>
+              <button onClick={() => setReceiptView(null)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-2 bg-gray-900 flex items-center justify-center min-h-[400px]">
+              <img src={receiptView} alt="GCash Receipt" className="max-w-full max-h-[70vh] object-contain shadow-2xl rounded-sm" />
+            </div>
+            <div className="p-6 text-center bg-white">
+              <p className="text-sm text-gray-500 italic mb-4">Please examine the reference number and amount carefully.</p>
+              <button onClick={() => setReceiptView(null)} className="btn-primary w-full py-3">Done Reviewing</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Decline Modal */}
+      {orderToDecline && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={() => setOrderToDecline(null)}>
+          <div 
+            className="bg-white rounded-2xl p-8 max-w-[450px] w-full shadow-2xl transform transition-all border border-gray-100 animate-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
+                <X className="w-6 h-6" />
+              </div>
+              <button onClick={() => setOrderToDecline(null)} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <h3 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">Decline Order</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Please provide a reason why this order is being declined. The customer will be notified of this message.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                Reason for Declining
+              </label>
+              <textarea 
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                className="input-field min-h-[120px] resize-none pt-3"
+                placeholder="e.g. Invalid GCash receipt, Out of delivery range, etc."
+                autoFocus
+              />
+            </div>
+            
+            <div className="flex gap-4 mt-8">
+              <button 
+                onClick={() => setOrderToDecline(null)}
+                className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+              >
+                Go Back
+              </button>
+              <button 
+                onClick={handleDeclineOrder}
+                disabled={!declineReason.trim() || isSubmittingDecline}
+                className={`flex-1 py-3 rounded-xl font-bold transition-all shadow-lg ${
+                  !declineReason.trim() || isSubmittingDecline 
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
+                    : 'bg-red-600 text-white hover:bg-red-700 shadow-red-100'
+                }`}
+              >
+                {isSubmittingDecline ? 'Declining...' : 'Confirm Decline'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 };

@@ -12,8 +12,9 @@ require_once '../config/db.php';
 $json_data = file_get_contents('php://input');
 $data = json_decode($json_data, true);
 
-$username = $data['username'] ?? '';
+$username = trim($data['username'] ?? '');
 $password = $data['password'] ?? '';
+
 
 if (empty($username) || empty($password)) {
     http_response_code(400);

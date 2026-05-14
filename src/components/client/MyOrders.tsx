@@ -1,5 +1,6 @@
 import React from 'react';
-import { Package, Clock, RotateCw, CheckCircle, FileText, Trash2 } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, FileText, Trash2, X } from 'lucide-react';
+
 import { useAppContext } from '../../context/AppContext';
 import type { OrderStatus } from '../../types';
 import { API_BASE_URL } from '../../config';
@@ -28,19 +29,30 @@ export const MyOrders: React.FC = () => {
         const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
         if (prodRes.ok) setProducts(await prodRes.json());
       } else {
-        const res = await response.json();
-        alert(res.error || "Failed to cancel order.");
+        const errorText = await response.text();
+        try {
+          const res = JSON.parse(errorText);
+          alert(res.error || "Failed to cancel order.");
+        } catch {
+          console.error("Server Error:", errorText);
+          alert("Server Error: " + errorText.substring(0, 100));
+        }
       }
-    } catch {
-      alert("Error connecting to server.");
+    } catch (err) {
+      console.error("Connection Error:", err);
+      alert("Error connecting to server. Please check your internet or if the server is running.");
     }
   };
+
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
     pending: { text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: Clock },
     processing: { text: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: RotateCw },
     completed: { text: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: CheckCircle },
+    declined: { text: 'text-red-700', bg: 'bg-red-50 border-red-200', icon: X },
+    cancelled: { text: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: Trash2 },
   };
+
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
@@ -50,7 +62,8 @@ export const MyOrders: React.FC = () => {
            <p className="text-gray-500 mt-1">Track the status of your recent purchases.</p>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-           {(['all', 'pending', 'processing', 'completed'] as const).map((s) => (
+           {(['all', 'pending', 'processing', 'completed', 'declined'] as const).map((s) => (
+
              <button
                key={s}
                onClick={() => setFilter(s)}
@@ -87,6 +100,18 @@ export const MyOrders: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-600 uppercase shadow-sm">
+                    {order.paymentMethod || 'Cash on Delivery'}
+                  </div>
+                  {order.paymentMethod === 'GCash' && (
+                    <div className="px-3 py-1 bg-blue-50 border border-blue-100 rounded-lg text-[10px] font-bold text-blue-600 uppercase shadow-sm">
+                      Receipt Attached
+                    </div>
+                  )}
+                </div>
+
+
                 <div className="mb-6 flex-1">
                   <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Purchased Items</h4>
                   <ul className="space-y-3">
@@ -103,12 +128,25 @@ export const MyOrders: React.FC = () => {
                 </div>
 
                 <div className="mt-auto pt-5 border-t border-gray-100 flex flex-col gap-4">
-                  {order.estimatedArrival && (
+                  {order.estimatedArrival && order.status !== 'declined' && (
                     <div className="flex items-center gap-2 text-sm font-bold text-blue-700 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
                       <Clock className="w-4 h-4" />
                       <span>Estimated Arrival: {order.estimatedArrival}</span>
                     </div>
                   )}
+                  {order.status === 'declined' && order.declineReason && (
+                    <div className="flex flex-col gap-2 p-4 bg-red-50 border border-red-100 rounded-xl">
+                       <div className="flex items-center gap-2 text-red-700 font-bold text-sm">
+                          <X className="w-4 h-4" />
+                          <span>Order Declined</span>
+                       </div>
+                       <p className="text-sm text-red-600 bg-white/50 p-3 rounded-lg border border-red-100 italic">
+                          "{order.declineReason}"
+                       </p>
+                       <p className="text-[10px] text-red-400 font-medium uppercase tracking-wider">Please contact support if you have questions.</p>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                        {order.status === 'pending' && (

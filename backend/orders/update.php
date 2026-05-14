@@ -12,6 +12,8 @@ $data = json_decode($json_data, true);
 $id = $data['id'] ?? '';
 $status = $data['status'] ?? null;
 $eta = $data['estimatedArrival'] ?? null;
+$declineReason = $data['declineReason'] ?? null;
+
 
 if (empty($id)) {
     http_response_code(400);
@@ -32,6 +34,11 @@ try {
         $updates[] = "estimated_arrival = ?";
         $params[] = $eta;
     }
+    if ($declineReason) {
+        $updates[] = "decline_reason = ?";
+        $params[] = $declineReason;
+    }
+
 
     if (empty($updates)) {
         echo json_encode(['message' => 'No changes made.']);

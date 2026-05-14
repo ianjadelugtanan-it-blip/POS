@@ -26,7 +26,8 @@ export interface Transaction {
   date: string;
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'completed';
+export type OrderStatus = 'pending' | 'processing' | 'completed' | 'declined' | 'cancelled';
+
 
 export interface Order {
   id: string;
@@ -41,5 +42,7 @@ export interface Order {
   estimatedArrival?: string;
   paymentMethod?: string;
   receiptImage?: string;
+  declineReason?: string;
+
 }
 

@@ -16,9 +16,10 @@ $json_data = file_get_contents('php://input');
 $data = json_decode($json_data, true);
 
 // 2. Validate and sanitize input
-$username = filter_var($data['username'] ?? '', FILTER_SANITIZE_STRING);
+$username = trim($data['username'] ?? '');
 $password = $data['password'] ?? '';
 $role = $data['role'] ?? 'client';
+
 
 if (empty($username) || empty($password)) {
     http_response_code(400);
