@@ -15,7 +15,6 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
 
   const navItems = [
     { id: 'shop', label: 'Shop', icon: Shirt },
-    { id: 'cart', label: 'My Cart', icon: ShoppingCart },
     { id: 'my-orders', label: 'My Orders', icon: ClipboardList },
   ];
 

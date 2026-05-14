@@ -1,13 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ProductCard } from '../ProductCard';
+import { ProductDetails } from './ProductDetails';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Tag } from 'lucide-react';
 
 export const Shop: React.FC = () => {
   const { products, setClientCart } = useAppContext();
   
   const [toastItem, setToastItem] = useState<{ id: number; name: string, status: string } | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const categories = useMemo(() => {
+    return ['All', ...Array.from(new Set(products.map(p => p.category)))];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return selectedCategory === 'All' 
+      ? products 
+      : products.filter(p => p.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product, quantity: number) => {
     setClientCart(prev => {
@@ -45,29 +58,64 @@ export const Shop: React.FC = () => {
         </div>
       )}
 
-      {/* Header Section */}
-      <div className="flex items-center justify-between mb-8 px-2 border-b border-gray-200 pb-4">
-         <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Available Items</h3>
-         <span className="text-sm font-bold text-gray-500">{products.length} Items</span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 gap-y-10">
-        {products.map((product, index) => (
-          <div key={product.id} className="animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
-            <ProductCard 
-              product={product} 
-              onAddToCart={handleAddToCart} 
-            />
+      {selectedProduct ? (
+        <ProductDetails 
+          product={selectedProduct} 
+          onBack={() => setSelectedProduct(null)} 
+          onAddToCart={handleAddToCart} 
+          onSelectProduct={setSelectedProduct}
+        />
+      ) : (
+        <>
+          {/* Header & Categories Section */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 px-2 border-b border-gray-200 pb-6 gap-6">
+             <div>
+               <h3 className="text-3xl font-bold text-gray-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Discover</h3>
+               <span className="text-sm font-medium text-gray-500">{filteredProducts.length} Items</span>
+             </div>
+             
+             {/* Category Selector */}
+             <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+                <Tag className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                      selectedCategory === category
+                        ? 'bg-black text-white shadow-md'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-900 hover:text-gray-900'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+             </div>
           </div>
-        ))}
-      </div>
-      
-      {products.length === 0 && (
-         <div className="card p-16 flex flex-col items-center justify-center text-gray-400 mt-8 border border-dashed border-gray-300 bg-white/50">
-           <ShoppingBag className="w-12 h-12 text-gray-300 mb-4" />
-           <p className="font-bold text-gray-900 text-lg mb-1">Catalog Empty</p>
-           <p className="text-sm font-medium">The system currently holds no physical products.</p>
-         </div>
+
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 lg:gap-8">
+            {filteredProducts.map((product, index) => (
+              <div 
+                key={product.id} 
+                className="animate-cascade w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-1rem)] lg:w-[calc(25%-1.5rem)] xl:w-[calc(20%-1.6rem)]" 
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <ProductCard 
+                  product={product} 
+                  onClick={() => setSelectedProduct(product)}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {filteredProducts.length === 0 && (
+             <div className="card p-16 flex flex-col items-center justify-center text-gray-400 mt-8 border border-dashed border-gray-300 bg-white/50">
+               <ShoppingBag className="w-12 h-12 text-gray-300 mb-4" />
+               <p className="font-bold text-gray-900 text-lg mb-1">No Items Found</p>
+               <p className="text-sm font-medium">Try selecting a different category.</p>
+             </div>
+          )}
+        </>
       )}
     </div>
   );

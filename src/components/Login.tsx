@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { API_BASE_URL } from '../context/AppContextProvider';
+import { API_BASE_URL } from '../config';
 import { Eye, EyeOff } from 'lucide-react';
 
 export const Login: React.FC = () => {

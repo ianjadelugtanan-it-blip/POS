@@ -1,72 +1,111 @@
-import React, { useState } from 'react';
-import { Plus, Minus, Info, ShoppingCart } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Info, Heart, Star } from 'lucide-react';
 import type { Product } from '../types';
 
 interface ProductCardProps {
   product: Product;
   variant?: 'shop' | 'pos';
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart?: (product: Product, quantity: number) => void;
+  onClick?: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'shop', onAddToCart }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'shop', onAddToCart, onClick }) => {
   const isOutOfStock = product.stock === 0;
-  const [localQuantity, setLocalQuantity] = useState(1);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  const handleIncrease = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (localQuantity < product.stock) {
-      setLocalQuantity(prev => prev + 1);
-    }
-  };
-
-  const handleDecrease = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (localQuantity > 1) {
-      setLocalQuantity(prev => prev - 1);
-    }
-  };
-
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (localQuantity > 0 && localQuantity <= product.stock) {
-      setShowConfirmModal(true);
-    }
-  };
-
-  const confirmAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddToCart(product, localQuantity);
-    setLocalQuantity(1);
-    setShowConfirmModal(false);
-  };
-
-  const cancelAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowConfirmModal(false);
-  };
+  // Mock rating
+  const rating = 4.8;
+  const reviewsCount = useMemo(() => {
+    const hash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return (hash * 73) % 500 + 50;
+  }, [product.id]);
 
   const handlePosQuickAdd = () => {
-    if (!isOutOfStock) {
+    if (!isOutOfStock && onAddToCart) {
       onAddToCart(product, 1);
     }
   };
 
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFavorite(!isFavorite);
+  };
+
+  if (variant === 'shop') {
+    return (
+      <div 
+        onClick={onClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="group cursor-pointer flex flex-col h-full bg-white transition-all duration-300 relative"
+      >
+        {/* Image container */}
+        <div className="w-full relative bg-gray-100 overflow-hidden rounded-xl aspect-[4/5] mb-3">
+          {product.imageUrl ? (
+            <img 
+              src={product.imageUrl} 
+              alt={product.name} 
+              className={`w-full h-full object-cover bg-gray-50 ease-out transition-transform duration-500 group-hover:scale-105 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100/50">
+              <span className="text-gray-400 font-medium text-xs flex flex-col items-center gap-1">
+                 <PackageIcon className="w-6 h-6 opacity-20" />
+                 No Image
+              </span>
+            </div>
+          )}
+          
+          <button 
+            onClick={toggleFavorite}
+            className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-md shadow-sm transition-all duration-200 ${isFavorite ? 'bg-white text-red-500' : 'bg-white/70 text-gray-600 hover:bg-white'} ${isHovered || isFavorite ? 'opacity-100' : 'opacity-0'}`}
+            aria-label="Favorite"
+          >
+            <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+          </button>
+
+          {isOutOfStock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+               <span className="bg-white text-gray-900 shadow-md px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                 Sold Out
+               </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col flex-1 relative bg-white px-1">
+          <p className="text-xs text-gray-500 mb-1">The Find</p>
+          <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2 mb-1 group-hover:underline decoration-1 underline-offset-2">
+            {product.name}
+          </h3>
+          
+          <div className="flex items-center gap-1 mb-1">
+            <Star className="w-3.5 h-3.5 fill-gray-900 text-gray-900" />
+            <span className="text-xs font-medium">{rating}</span>
+            <span className="text-xs text-gray-500">({reviewsCount})</span>
+          </div>
+          
+          <p className="text-base font-bold text-gray-900 mt-auto">
+            ₱{product.price.toFixed(2)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // POS Variant
   return (
     <div 
-      onClick={variant === 'pos' ? handlePosQuickAdd : undefined}
+      onClick={handlePosQuickAdd}
       className={`card overflow-hidden group flex flex-col h-full bg-white transition-all duration-300 relative ${
-        variant === 'pos' && !isOutOfStock 
+        !isOutOfStock 
           ? 'cursor-pointer hover:border-blue-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98]' 
-          : variant === 'shop'
-          ? 'hover:-translate-y-1'
-          : ''
-      } ${
-        variant === 'pos' && isOutOfStock ? 'opacity-70 cursor-not-allowed' : ''
+          : 'opacity-70 cursor-not-allowed'
       }`}
     >
-      {/* Image container */}
-      <div className={`w-full relative bg-gray-100 overflow-hidden ${variant === 'pos' ? 'aspect-video' : 'aspect-square'}`}>
+      <div className="w-full relative bg-gray-100 overflow-hidden aspect-video">
         {product.imageUrl ? (
           <img 
             src={product.imageUrl} 
@@ -82,12 +121,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
             </span>
           </div>
         )}
-        
-        {variant === 'shop' && (
-          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-gray-100">
-            {product.category}
-          </div>
-        )}
 
         {isOutOfStock && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
@@ -99,103 +132,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
         )}
       </div>
 
-      <div className={`flex flex-col flex-1 relative bg-white ${variant === 'pos' ? 'p-4' : 'p-5'}`}>
-        <h3 className={`${variant === 'pos' ? 'text-base line-clamp-1' : 'text-lg leading-snug'} font-bold text-gray-900 mb-1`}>
+      <div className="flex flex-col flex-1 relative bg-white p-4">
+        <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">
           {product.name}
         </h3>
         
-        {/* Price Tag */}
-        <p className={`${variant === 'pos' ? 'text-lg' : 'text-xl'} font-bold text-blue-600 mb-${variant === 'pos' ? '1' : '4'}`}>
-          ₱{product.price.toFixed(2)}
-        </p>
-        
-        {variant === 'shop' && (
-          <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-3">
-             <span className="text-sm text-gray-500 font-medium text-center">
-               {product.stock > 0 ? `${product.stock} units available` : 'Currently Unavailable'}
-             </span>
-             
-             {!isOutOfStock && (
-               <div className="flex items-center gap-2 mt-1">
-                 {/* Pre-purchase Quantity Adjuster */}
-                 <div className="flex items-center justify-between bg-gray-50 rounded-xl border border-gray-200 p-1 flex-1">
-                   <button
-                     onClick={handleDecrease}
-                     className="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-900 shadow-sm hover:scale-105 active:scale-95 transition-all"
-                     aria-label="Decrease quantity"
-                   >
-                     <Minus className="w-4 h-4" />
-                   </button>
-                   <span className="text-sm font-bold w-6 text-center select-none">{localQuantity}</span>
-                   <button
-                     onClick={handleIncrease}
-                     disabled={localQuantity >= product.stock}
-                     className={`w-8 h-8 flex items-center justify-center rounded-lg shadow-sm transition-all ${localQuantity >= product.stock ? 'bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed' : 'bg-white text-gray-900 hover:scale-105 active:scale-95'}`}
-                     aria-label="Increase quantity"
-                   >
-                     <Plus className="w-4 h-4" />
-                   </button>
-                 </div>
-                 
-                 {/* Explicit Add to Cart Confirmation Action */}
-                 <button
-                   onClick={handleSubmit}
-                   className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-black text-white hover:bg-gray-800 hover:shadow-lg active:scale-95 transition-all duration-300 font-bold text-sm shadow-md"
-                   aria-label="Confirm Purchase Action"
-                 >
-                   <ShoppingCart className="w-4 h-4" />
-                   Checkout
-                 </button>
-               </div>
-             )}
-          </div>
-        )}
-
-        {/* POS UI remains similar but cleaner */}
-        {variant === 'pos' && (
-          <>
-            <p className="text-lg font-bold text-blue-600 mb-1">₱{product.price.toFixed(2)}</p>
-            <div className="mt-auto flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
-              <span>{product.stock} in stock</span>
-              {!isOutOfStock && (
-                <span className="font-semibold text-gray-300 border border-gray-100 rounded-md px-1 bg-gray-50">TAP</span>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Custom Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={(e) => { e.stopPropagation(); cancelAddToCart(e); }}>
-          <div 
-            className="bg-white rounded-2xl p-6 max-w-[320px] w-full shadow-2xl transform transition-all border border-gray-100"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-4 mx-auto">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center tracking-tight">Add to Bag?</h3>
-            <p className="text-sm text-gray-600 mb-6 text-center">
-              Are you sure you want to add <strong className="text-gray-900">{localQuantity}x {product.name}</strong> to your shopping bag?
-            </p>
-            <div className="flex gap-3">
-              <button 
-                onClick={cancelAddToCart}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors text-sm"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={confirmAddToCart}
-                className="flex-1 py-2.5 rounded-xl bg-black text-white font-bold hover:bg-gray-800 transition-colors shadow-sm text-sm"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
+        <p className="text-lg font-bold text-blue-600 mb-1">₱{product.price.toFixed(2)}</p>
+        <div className="mt-auto flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
+          <span>{product.stock} in stock</span>
+          {!isOutOfStock && (
+            <span className="font-semibold text-gray-300 border border-gray-100 rounded-md px-1 bg-gray-50">TAP</span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

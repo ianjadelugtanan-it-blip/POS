@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Truck, MapPin, Phone, User, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 import type { Order } from '../../types';
 
 interface CheckoutProps {

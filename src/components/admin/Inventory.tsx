@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, ImagePlus } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 
 export const Inventory: React.FC = () => {
   const { products, setProducts } = useAppContext();
@@ -24,8 +24,15 @@ export const Inventory: React.FC = () => {
     }
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (deletingId !== id) {
+      setDeletingId(id);
+      // Auto-cancel after 3 seconds
+      setTimeout(() => setDeletingId(null), 3000);
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/products/delete.php`, {
@@ -38,11 +45,14 @@ export const Inventory: React.FC = () => {
 
       if (response.ok) {
         setProducts(products.filter(p => p.id !== id));
+        setDeletingId(null);
       } else {
-        alert(result.error || "Failed to delete product.");
+        console.error(result.error || "Failed to delete product.");
+        setDeletingId(null);
       }
     } catch {
-      alert("Connection error.");
+      console.error("Connection error.");
+      setDeletingId(null);
     }
   };
 
@@ -187,10 +197,15 @@ export const Inventory: React.FC = () => {
                   <td className="p-4 pr-6 text-right">
                     <button 
                       onClick={() => handleDelete(product.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      className={`p-2 rounded-lg transition-colors flex items-center gap-2 ml-auto ${
+                        deletingId === product.id 
+                          ? 'bg-red-500 text-white hover:bg-red-600 px-3' 
+                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      }`}
                       aria-label="Delete product"
                     >
                       <Trash2 className="w-4 h-4" />
+                      {deletingId === product.id && <span className="text-xs font-bold">Confirm</span>}
                     </button>
                   </td>
                 </tr>
