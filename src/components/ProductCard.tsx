@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Info, Heart, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Info, Heart } from 'lucide-react';
 import type { Product } from '../types';
 
 interface ProductCardProps {
@@ -14,12 +14,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Mock rating
-  const rating = 4.8;
-  const reviewsCount = useMemo(() => {
-    const hash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (hash * 73) % 500 + 50;
-  }, [product.id]);
 
   const handlePosQuickAdd = () => {
     if (!isOutOfStock && onAddToCart) {
@@ -81,11 +75,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
             {product.name}
           </h3>
           
-          <div className="flex items-center gap-1 mb-1">
-            <Star className="w-3.5 h-3.5 fill-gray-900 text-gray-900" />
-            <span className="text-xs font-medium">{rating}</span>
-            <span className="text-xs text-gray-500">({reviewsCount})</span>
-          </div>
           
           <p className="text-base font-bold text-gray-900 mt-auto">
             ₱{product.price.toFixed(2)}

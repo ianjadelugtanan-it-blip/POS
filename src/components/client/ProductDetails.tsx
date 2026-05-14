@@ -16,13 +16,6 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const isOutOfStock = product.stock === 0;
-
-  // Mock data for a premium feel
-  const rating = 4.9;
-  const reviewsCount = useMemo(() => {
-    const hash = product.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (hash * 137) % 800 + 120;
-  }, [product.id]);
   
   const recommendations = useMemo(() => {
     return products.filter(p => p.id !== product.id).slice(0, 4);
@@ -110,11 +103,6 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
             </h1>
             
             <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-6">
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-bold text-gray-900 ml-1">{rating}</span>
-                <span className="text-gray-500 underline decoration-1 underline-offset-2 cursor-pointer">({reviewsCount} reviews)</span>
-              </div>
               <div className="w-1 h-1 rounded-full bg-gray-300" />
               <span className="text-sm text-gray-600">The Find</span>
             </div>

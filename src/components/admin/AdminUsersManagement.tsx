@@ -8,6 +8,7 @@ export const AdminUsersManagement: React.FC = () => {
   const [newUsername, setNewUsername] = useState('');
   const [newRole, setNewRole] = useState<'admin' | 'client'>('admin');
   const [newPassword, setNewPassword] = useState('');
+  const [userToRemove, setUserToRemove] = useState<string | null>(null);
 
   const handleAddUser = async () => {
     if (!newUsername.trim() || !newPassword.trim()) {
@@ -44,25 +45,25 @@ export const AdminUsersManagement: React.FC = () => {
     }
   };
 
-  const handleRemoveUser = async (usernameToRemove: string) => {
-    if (usernameToRemove === 'admin' || usernameToRemove === 'client') {
+  const handleRemoveUser = async () => {
+    if (!userToRemove) return;
+    if (userToRemove === 'admin' || userToRemove === 'client') {
       alert("System core accounts cannot be removed.");
       return;
     }
-    
-    if (!confirm(`Are you sure you want to revoke access for ${usernameToRemove}?`)) return;
 
     try {
       const response = await fetch(`${API_BASE_URL}/users/remove.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: usernameToRemove })
+        body: JSON.stringify({ username: userToRemove })
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        setUsers(users.filter(u => u.username !== usernameToRemove));
+        setUsers(users.filter(u => u.username !== userToRemove));
+        setUserToRemove(null);
       } else {
         alert(result.error || "Failed to remove user.");
       }
@@ -160,7 +161,7 @@ export const AdminUsersManagement: React.FC = () => {
                  <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end">
                    {u.username !== 'admin' && u.username !== 'client' ? (
                      <button 
-                       onClick={() => handleRemoveUser(u.username)}
+                       onClick={() => setUserToRemove(u.username)}
                        className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 px-3 py-1.5 rounded-full"
                      >
                        <Trash2 className="w-4 h-4" />
@@ -178,6 +179,38 @@ export const AdminUsersManagement: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Revoke Access Confirmation Modal */}
+      {userToRemove && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-8 pb-4 flex flex-col items-center text-center">
+                 <div className="w-16 h-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
+                    <Trash2 className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-xl font-bold text-gray-900">Revoke System Access?</h3>
+                 <p className="text-sm text-gray-500 mt-2">
+                   Are you sure you want to remove <span className="font-bold text-gray-900">{userToRemove}</span>? They will no longer be able to log in to the platform.
+                 </p>
+              </div>
+              
+              <div className="p-8 flex gap-3">
+                 <button 
+                   onClick={() => setUserToRemove(null)}
+                   className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                 >
+                   Cancel
+                 </button>
+                 <button 
+                   onClick={handleRemoveUser}
+                   className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
+                 >
+                   Revoke
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

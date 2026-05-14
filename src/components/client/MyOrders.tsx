@@ -1,14 +1,40 @@
 import React from 'react';
-import { Package, Clock, RotateCw, CheckCircle, MapPin } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, FileText, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import type { OrderStatus } from '../../types';
+import { API_BASE_URL } from '../../config';
 
 export const MyOrders: React.FC = () => {
-  const { orders, user } = useAppContext();
+  const { orders, user, setOrders, setProducts } = useAppContext();
   const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
+  const [selectedReceipt, setSelectedReceipt] = React.useState<any | null>(null);
+  const [orderToCancel, setOrderToCancel] = React.useState<string | null>(null);
   
   const myOrders = orders.filter(o => o.username === user?.username);
   const filteredOrders = filter === 'all' ? myOrders : myOrders.filter(o => o.status === filter);
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/cancel.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderToCancel })
+      });
+      if (response.ok) {
+        setOrders(orders.filter(o => o.id !== orderToCancel));
+        setOrderToCancel(null);
+        // Refresh products to show restored stock
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+      } else {
+        const res = await response.json();
+        alert(res.error || "Failed to cancel order.");
+      }
+    } catch {
+      alert("Error connecting to server.");
+    }
+  };
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
     pending: { text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: Clock },
@@ -84,9 +110,23 @@ export const MyOrders: React.FC = () => {
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <MapPin className="w-4 h-4" />
-                      <span>Requires Delivery</span>
+                    <div className="flex items-center gap-2">
+                       {order.status === 'pending' && (
+                         <button 
+                           onClick={() => setOrderToCancel(order.id)}
+                           className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[11px] font-bold uppercase hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5"
+                         >
+                           <Trash2 className="w-3 h-3" />
+                           Cancel
+                         </button>
+                       )}
+                       <button 
+                         onClick={() => setSelectedReceipt(order)}
+                         className="px-3 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-[11px] font-bold uppercase hover:bg-black hover:text-white transition-all flex items-center gap-1.5"
+                       >
+                         <FileText className="w-3 h-3" />
+                         Receipt
+                       </button>
                     </div>
                     <div className="flex flex-col text-right">
                        <span className="text-xs font-semibold text-gray-400 uppercase">Total Amount</span>
@@ -113,6 +153,84 @@ export const MyOrders: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Client Receipt Modal */}
+      {selectedReceipt && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-8 pb-4 flex flex-col items-center border-b border-gray-100 border-dashed">
+                 <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                    <FileText className="w-6 h-6" />
+                 </div>
+                 <h3 className="text-lg font-bold text-gray-900">Order Invoice</h3>
+                 <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mt-1">Status: {selectedReceipt.status}</p>
+              </div>
+              
+              <div className="p-8 pt-6">
+                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 font-mono text-xs text-gray-600 space-y-3">
+                    <div className="flex justify-between border-b border-gray-200 pb-2 mb-2">
+                       <span className="font-bold uppercase tracking-widest">E-Receipt</span>
+                       <span>#{selectedReceipt.id}</span>
+                    </div>
+                    <div className="space-y-2">
+                       {selectedReceipt.items.map((item: any) => (
+                          <div key={item.id} className="flex justify-between">
+                             <span>{item.quantity}x {item.name}</span>
+                             <span>₱{(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                       ))}
+                    </div>
+                    <div className="flex justify-between border-t border-gray-200 pt-2 mt-4 text-sm font-bold text-gray-900">
+                       <span>Total Charged</span>
+                       <span>₱{selectedReceipt.total.toFixed(2)}</span>
+                    </div>
+                    <div className="text-center pt-4 opacity-50">
+                       <p>{new Date(selectedReceipt.date).toLocaleString()}</p>
+                       <p className="mt-1">Thanks for choosing The Find!</p>
+                    </div>
+                 </div>
+                 
+                 <div className="mt-8">
+                    <button 
+                      onClick={() => setSelectedReceipt(null)}
+                      className="w-full py-3.5 rounded-xl bg-black text-white font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-black/20"
+                    >
+                      Close Receipt
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+      {/* Cancellation Confirmation Modal */}
+      {orderToCancel && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-8 pb-4 flex flex-col items-center">
+                 <div className="w-14 h-14 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
+                    <Trash2 className="w-7 h-7" />
+                 </div>
+                 <h3 className="text-xl font-bold text-gray-900">Cancel this order?</h3>
+                 <p className="text-sm text-gray-500 text-center mt-2">This action will remove your order and restore the items to our inventory. This cannot be undone.</p>
+              </div>
+              
+              <div className="p-8 flex gap-3">
+                 <button 
+                   onClick={() => setOrderToCancel(null)}
+                   className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                 >
+                   No, Keep It
+                 </button>
+                 <button 
+                   onClick={handleCancelOrder}
+                   className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                 >
+                   Yes, Cancel
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

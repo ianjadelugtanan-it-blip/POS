@@ -14,9 +14,29 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [contact, setContact] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'Cash on Delivery' | 'GCash' | 'Bank Transfer'>('Cash on Delivery');
+  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const subtotal = clientCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        alert("Image is too large. Please upload a file smaller than 2MB.");
+        return;
+      }
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptImage(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +51,9 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
       items: [...clientCart],
       total,
       status: 'pending',
-      date: new Date().toISOString().slice(0, 19).replace('T', ' ')
+      date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      paymentMethod,
+      receiptImage
     };
 
     try {
@@ -126,13 +148,95 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
                   required
                 />
             </div>
+             <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                  Payment Method
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    { id: 'Cash on Delivery', label: 'Cash on Delivery', disabled: false },
+                    { id: 'GCash', label: 'GCash', disabled: false },
+                    { id: 'Bank Transfer', label: 'Bank Transfer', disabled: true }
+                  ].map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      disabled={method.disabled}
+                      onClick={() => !method.disabled && setPaymentMethod(method.id as any)}
+                      className={`p-4 rounded-xl border-2 text-sm font-bold transition-all relative ${
+                        method.disabled 
+                          ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                          : paymentMethod === method.id
+                            ? 'border-gray-900 bg-gray-900 text-white shadow-md'
+                            : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {method.label}
+                      {method.disabled && (
+                        <span className="absolute -top-2 -right-1 px-2 py-0.5 bg-gray-200 text-gray-500 text-[9px] rounded-md uppercase tracking-wider">
+                          Unavailable
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {paymentMethod === 'GCash' && (
+                  <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-4">
+                    <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-6">
+                       <div className="w-32 h-32 bg-white p-2 rounded-xl border-2 border-dashed border-blue-200 flex-shrink-0 flex items-center justify-center relative group">
+                          {/* Placeholder QR Code UI */}
+                          <div className="w-full h-full bg-gray-50 flex items-center justify-center text-blue-600">
+                             <div className="grid grid-cols-3 gap-1">
+                                {[...Array(9)].map((_, i) => <div key={i} className="w-2 h-2 bg-blue-600 rounded-sm"></div>)}
+                             </div>
+                          </div>
+                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-800 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity">SCAN ME</span>
+                       </div>
+                       <div className="flex-1">
+                          <h4 className="font-bold text-blue-900 mb-1">GCash Payment</h4>
+                          <p className="text-sm text-blue-700 leading-relaxed mb-3">
+                            Please scan the QR code and send exactly ₱{total.toFixed(2)} to <strong>09XX-XXX-XXXX (IAN L.)</strong>.
+                          </p>
+                          <div className="flex flex-col gap-2">
+                             <label className="text-xs font-bold text-blue-600 uppercase">Upload Receipt Screenshot</label>
+                             <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleImageUpload}
+                                className="block w-full text-sm text-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all"
+                                required={paymentMethod === 'GCash'}
+                             />
+                          </div>
+                       </div>
+                    </div>
+                    {receiptImage && (
+                      <div className="relative w-full max-w-[200px] aspect-[9/16] rounded-xl overflow-hidden border-4 border-white shadow-lg mx-auto">
+                        <img src={receiptImage} alt="Receipt Preview" className="w-full h-full object-cover" />
+                        <button 
+                          type="button" 
+                          onClick={() => setReceiptImage(null)}
+                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black transition-colors"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <p className="mt-4 text-xs text-gray-400 italic">
+                  * {paymentMethod === 'Cash on Delivery' ? 'Pay upon receiving your items.' : 'Payment must be verified before processing.'}
+                </p>
+             </div>
 
             <div className="pt-6 border-t border-gray-100 mt-8">
               <button
                 type="submit"
-                className="w-full btn-primary"
+                disabled={isUploading}
+                className="w-full btn-primary disabled:opacity-50"
               >
-                Place Order Securely
+                {isUploading ? 'Processing...' : 'Place Order Securely'}
               </button>
               <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500 font-medium">
                  <ShieldCheck className="w-4 h-4 text-green-500" />

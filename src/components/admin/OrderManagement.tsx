@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2 } from 'lucide-react';
+import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2, Search } from 'lucide-react';
 import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
@@ -10,6 +10,13 @@ export const OrderManagement: React.FC = () => {
   const [activeOrderForETA, setActiveOrderForETA] = useState<string | null>(null);
   const [etaDate, setEtaDate] = useState('');
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredOrders = orders.filter(o => 
+    o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    o.address?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleDeleteOrder = async (id: string) => {
     try {
@@ -78,13 +85,25 @@ export const OrderManagement: React.FC = () => {
            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Order Management</h2>
            <p className="text-gray-500 mt-1">Process and track customer delivery logistics.</p>
         </div>
-        <div className="px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm text-sm font-medium">
-          {orders.length} Active Orders
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+           <div className="relative flex-1 sm:w-64">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+             <input 
+               type="text"
+               placeholder="Search orders..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="input-field !pl-10 h-10 text-sm bg-white"
+             />
+           </div>
+           <div className="px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm text-sm font-medium whitespace-nowrap">
+             {orders.filter(o => o.status !== 'completed').length} Active Orders
+           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {orders.map((order, index) => {
+        {filteredOrders.map((order, index) => {
            const StatusIcon = statusConfig[order.status].icon;
            return (
              <div key={order.id} className="card p-6 flex flex-col group animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
@@ -167,10 +186,12 @@ export const OrderManagement: React.FC = () => {
              </div>
            );
         })}
-        {orders.length === 0 && (
+        {filteredOrders.length === 0 && (
           <div className="col-span-full card p-12 text-center text-gray-500 flex flex-col items-center">
             <Package className="w-12 h-12 text-gray-300 mb-4" />
-            <p className="text-lg font-medium text-gray-900">No active orders</p>
+            <p className="text-lg font-medium text-gray-900">
+              {searchQuery ? `No results for "${searchQuery}"` : 'No active orders'}
+            </p>
             <p className="text-sm">When customers place orders, they will appear here.</p>
           </div>
         )}

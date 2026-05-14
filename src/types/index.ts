@@ -39,5 +39,7 @@ export interface Order {
   status: OrderStatus;
   date: string;
   estimatedArrival?: string;
+  paymentMethod?: string;
+  receiptImage?: string;
 }
 

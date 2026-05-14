@@ -24,13 +24,31 @@ export const SalesReport: React.FC = () => {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  const totalRevenue = mergedLedger.reduce((sum, t) => sum + t.total, 0);
+  const avgOrderValue = mergedLedger.length > 0 ? totalRevenue / mergedLedger.length : 0;
+
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto pb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Global Sales Ledger</h2>
+           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Global Sales Ledger</h2>
            <p className="text-gray-500 mt-1">Unified view of Terminal Transactions and Completed Delivery Orders.</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+         <div className="card p-6 bg-slate-900 text-white border-none">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Global Revenue</p>
+            <p className="text-3xl font-black font-mono">₱{totalRevenue.toLocaleString()}</p>
+         </div>
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order Volume</p>
+            <p className="text-3xl font-black font-mono text-gray-900">{mergedLedger.length}</p>
+         </div>
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Avg. Transaction Value</p>
+            <p className="text-3xl font-black font-mono text-gray-900">₱{avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+         </div>
       </div>
       
       <div className="card overflow-hidden">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingCart, Plus, Minus, X } from 'lucide-react';
+import { Search, ShoppingCart, Plus, Minus, X, CheckCircle } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
@@ -8,6 +8,7 @@ import { ProductCard } from '../ProductCard';
 export const POSCashier: React.FC = () => {
   const { products, setProducts, posCart, setPosCart, setOrders } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
+  const [lastTransaction, setLastTransaction] = useState<any | null>(null);
 
   const cartTotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -68,7 +69,7 @@ export const POSCashier: React.FC = () => {
         if (orderRes.ok) setOrders(await orderRes.json());
 
         setPosCart([]);
-        alert("Transaction Successful and Stock Updated!");
+        setLastTransaction(orderData);
       } else {
         const result = await response.json();
         alert(result.error || "Transaction failed.");
@@ -192,6 +193,60 @@ export const POSCashier: React.FC = () => {
          </div>
       </div>
 
+      {/* Receipt Modal */}
+      {lastTransaction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-8 pb-4 flex flex-col items-center border-b border-gray-100 border-dashed">
+                 <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4">
+                    <CheckCircle className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-xl font-bold text-gray-900">Sale Successful!</h3>
+                 <p className="text-sm text-gray-500">Transaction recorded successfully.</p>
+              </div>
+              
+              <div className="p-8 pt-6">
+                 <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 font-mono text-xs text-gray-600 space-y-3">
+                    <div className="flex justify-between border-b border-gray-200 pb-2 mb-2">
+                       <span className="font-bold">RECEIPT</span>
+                       <span>{lastTransaction.id}</span>
+                    </div>
+                    <div className="space-y-2">
+                       {lastTransaction.items.map((item: any) => (
+                          <div key={item.id} className="flex justify-between">
+                             <span>{item.quantity}x {item.name}</span>
+                             <span>₱{(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                       ))}
+                    </div>
+                    <div className="flex justify-between border-t border-gray-200 pt-2 mt-4 text-sm font-bold text-gray-900">
+                       <span>Total Amount</span>
+                       <span>₱{lastTransaction.total.toFixed(2)}</span>
+                    </div>
+                    <div className="text-center pt-4 opacity-50">
+                       <p>{new Date().toLocaleString()}</p>
+                       <p className="mt-1">Thank you for shopping at The Find!</p>
+                    </div>
+                 </div>
+                 
+                 <div className="mt-8 grid grid-cols-2 gap-4">
+                    <button 
+                      onClick={() => setLastTransaction(null)}
+                      className="py-3.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+                    >
+                      Close
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="py-3.5 rounded-xl bg-black text-white font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-black/20"
+                    >
+                      Print Receipt
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };
