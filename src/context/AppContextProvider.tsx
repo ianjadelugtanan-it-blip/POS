@@ -21,8 +21,14 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [posCart, setPosCart] = useState<CartItem[]>([]);
-  const [clientCart, setClientCart] = useState<CartItem[]>([]);
+  const [posCart, setPosCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('pos_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [clientCart, setClientCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('client_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Fetch initial data from API
   useEffect(() => {
@@ -36,9 +42,15 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (user?.role === 'admin') {
           const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
           if (userRes.ok) setUsers(await userRes.json());
+        }
 
-          // Fetch Orders
-          const orderRes = await fetch(`${API_BASE_URL}/orders/get.php`);
+        // Fetch Orders
+        if (user) {
+          const url = user.role === 'admin' 
+            ? `${API_BASE_URL}/orders/get.php` 
+            : `${API_BASE_URL}/orders/get.php?username=${encodeURIComponent(user.username)}`;
+            
+          const orderRes = await fetch(url);
           if (orderRes.ok) setOrders(await orderRes.json());
         }
       } catch (error) {
@@ -48,6 +60,15 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     fetchInitialData();
   }, [user?.role]);
+
+  // Sync carts to localStorage
+  useEffect(() => {
+    localStorage.setItem('pos_cart', JSON.stringify(posCart));
+  }, [posCart]);
+
+  useEffect(() => {
+    localStorage.setItem('client_cart', JSON.stringify(clientCart));
+  }, [clientCart]);
 
   const logout = () => {
     setUser(null);

@@ -5,8 +5,10 @@ import type { OrderStatus } from '../../types';
 
 export const MyOrders: React.FC = () => {
   const { orders, user } = useAppContext();
+  const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
   
   const myOrders = orders.filter(o => o.username === user?.username);
+  const filteredOrders = filter === 'all' ? myOrders : myOrders.filter(o => o.status === filter);
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
     pending: { text: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: Clock },
@@ -21,10 +23,25 @@ export const MyOrders: React.FC = () => {
            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">My Orders</h2>
            <p className="text-gray-500 mt-1">Track the status of your recent purchases.</p>
         </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+           {(['all', 'pending', 'processing', 'completed'] as const).map((s) => (
+             <button
+               key={s}
+               onClick={() => setFilter(s)}
+               className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${
+                 filter === s
+                   ? 'bg-gray-900 text-white border-gray-900 shadow-md'
+                   : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+               }`}
+             >
+               {s}
+             </button>
+           ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {myOrders.map((order, index) => {
+        {filteredOrders.map((order, index) => {
             const StatusIcon = statusConfig[order.status].icon;
             return (
               <div key={order.id} className="card p-6 flex flex-col group border border-gray-100 hover:border-blue-200 transition-colors animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
@@ -80,13 +97,19 @@ export const MyOrders: React.FC = () => {
               </div>
             );
         })}
-        {myOrders.length === 0 && (
-          <div className="col-span-full card p-16 text-center flex flex-col items-center justify-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+        {filteredOrders.length === 0 && (
+          <div className="col-span-full card p-16 text-center flex flex-col items-center justify-center border-dashed bg-gray-50/30">
+            <div className="w-16 h-16 bg-white rounded-full border border-gray-100 flex items-center justify-center mb-4 shadow-sm">
                <Package className="w-8 h-8 text-gray-300" />
             </div>
-            <p className="text-xl font-bold text-gray-900 mb-1">No orders yet</p>
-            <p className="text-gray-500">Looks like you haven't made a purchase. Browse the collection.</p>
+            <p className="text-xl font-bold text-gray-900 mb-1">
+              {filter === 'all' ? 'No orders yet' : `No ${filter} orders`}
+            </p>
+            <p className="text-gray-500 max-w-xs mx-auto">
+              {filter === 'all' 
+                ? "Looks like you haven't made a purchase yet. Browse our collection to get started." 
+                : `You don't have any orders currently in the ${filter} stage.`}
+            </p>
           </div>
         )}
       </div>

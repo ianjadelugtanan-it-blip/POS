@@ -8,8 +8,15 @@ require_once '../config/headers.php';
 require_once '../config/db.php';
 
 try {
-    // 1. Fetch all orders
-    $stmt = $pdo->query("SELECT * FROM orders ORDER BY date DESC");
+    $username = $_GET['username'] ?? null;
+    
+    // 1. Fetch orders (optionally filtered by username)
+    if ($username) {
+        $stmt = $pdo->prepare("SELECT * FROM orders WHERE username = ? ORDER BY date DESC");
+        $stmt->execute([$username]);
+    } else {
+        $stmt = $pdo->query("SELECT * FROM orders ORDER BY date DESC");
+    }
     $orders = $stmt->fetchAll();
 
     $result = [];

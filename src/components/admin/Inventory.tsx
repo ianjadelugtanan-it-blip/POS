@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, Plus, Trash2, ImagePlus } from 'lucide-react';
+import { Package, Plus, Trash2, ImagePlus, Pencil } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
 
@@ -12,6 +12,7 @@ export const Inventory: React.FC = () => {
   const [stock, setStock] = useState('');
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -22,6 +23,18 @@ export const Inventory: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleEdit = (product: any) => {
+    setEditingId(product.id);
+    setName(product.name);
+    setPrice(product.price.toString());
+    setStock(product.stock.toString());
+    setCategory(product.category);
+    setImageUrl(product.imageUrl || '');
+    setShowForm(true);
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -61,7 +74,7 @@ export const Inventory: React.FC = () => {
     if (!name || !price || !stock || !category) return;
 
     const productData = {
-      id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+      id: editingId || Math.random().toString(36).substring(2, 9).toUpperCase(),
       name,
       price: parseFloat(price),
       stock: parseInt(stock, 10),
@@ -83,6 +96,7 @@ export const Inventory: React.FC = () => {
         
         setShowForm(false);
         setName(''); setPrice(''); setStock(''); setCategory(''); setImageUrl('');
+        setEditingId(null);
       } else {
         const result = await response.json();
         alert(result.error || "Failed to save product.");
@@ -100,7 +114,13 @@ export const Inventory: React.FC = () => {
            <p className="text-gray-500 mt-1">Manage your product catalog and insert distinct visuals.</p>
         </div>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              setEditingId(null);
+              setName(''); setPrice(''); setStock(''); setCategory(''); setImageUrl('');
+            }
+            setShowForm(!showForm);
+          }}
           className="btn-primary flex items-center gap-2 text-sm px-6 py-3 rounded-full"
         >
           <Plus className={`w-4 h-4 transition-transform duration-300 ${showForm ? 'rotate-45' : ''}`} />
@@ -110,7 +130,9 @@ export const Inventory: React.FC = () => {
 
       {showForm && (
         <div className="card p-6 mb-8 border-t-4 border-blue-500 animate-in fade-in slide-in-from-top-4 duration-300">
-          <h3 className="font-bold text-lg mb-4 text-gray-900">Define New Object</h3>
+          <h3 className="font-bold text-lg mb-4 text-gray-900">
+            {editingId ? `Update Product: ${editingId}` : 'Define New Object'}
+          </h3>
           <form onSubmit={handleAddSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Product Name</label>
@@ -144,7 +166,9 @@ export const Inventory: React.FC = () => {
               )}
             </div>
             <div className="md:col-span-2 flex justify-end mt-2">
-              <button type="submit" className="btn-primary rounded-full px-8 py-3 w-full md:w-auto shadow-md hover:shadow-xl">Store Product Object</button>
+              <button type="submit" className="btn-primary rounded-full px-8 py-3 w-full md:w-auto shadow-md hover:shadow-xl">
+                {editingId ? 'Update Product Object' : 'Store Product Object'}
+              </button>
             </div>
           </form>
         </div>
@@ -161,7 +185,7 @@ export const Inventory: React.FC = () => {
                 <th className="p-4">Category</th>
                 <th className="p-4">Price</th>
                 <th className="p-4">Stock</th>
-                <th className="p-4 pr-6 text-right">Actions</th>
+                <th className="p-4 pr-6 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -194,19 +218,28 @@ export const Inventory: React.FC = () => {
                       {product.stock} units
                     </span>
                   </td>
-                  <td className="p-4 pr-6 text-right">
-                    <button 
-                      onClick={() => handleDelete(product.id)}
-                      className={`p-2 rounded-lg transition-colors flex items-center gap-2 ml-auto ${
-                        deletingId === product.id 
-                          ? 'bg-red-500 text-white hover:bg-red-600 px-3' 
-                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                      }`}
-                      aria-label="Delete product"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {deletingId === product.id && <span className="text-xs font-bold">Confirm</span>}
-                    </button>
+                  <td className="p-4 pr-6">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleEdit(product)}
+                        className="p-2 rounded-lg transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        aria-label="Edit product"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        className={`p-2 rounded-lg transition-colors flex items-center gap-2 ${
+                          deletingId === product.id 
+                            ? 'bg-red-500 text-white hover:bg-red-600 px-3' 
+                            : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                        }`}
+                        aria-label="Delete product"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {deletingId === product.id && <span className="text-xs font-bold">Confirm</span>}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
