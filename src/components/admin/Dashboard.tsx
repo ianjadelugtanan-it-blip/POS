@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Package, Tag, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, Package, Tag } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export const Dashboard: React.FC = () => {
@@ -47,180 +47,169 @@ export const Dashboard: React.FC = () => {
     .sort(([,a], [,b]) => b - a)[0];
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl pb-10">
-      <div className="mb-10">
-         <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Overview Dashboard</h2>
-         <p className="text-gray-500 mt-1">Track your daily retail performance and insights.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        
-        <div className="card p-6 flex flex-col relative overflow-hidden group animate-cascade" style={{ animationDelay: '0ms' }}>
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
-             <TrendingUp className="w-24 h-24 text-blue-600" />
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-             <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-               <TrendingUp className="w-5 h-5" />
-             </div>
-             <h3 className="font-semibold text-gray-700">Today's Revenue</h3>
-          </div>
-          <p className="text-4xl font-bold text-[var(--sienna)] mt-auto font-mono tracking-tight">
-            ₱{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-        </div>
-
-        <div className="card p-6 flex flex-col relative overflow-hidden group animate-cascade" style={{ animationDelay: '100ms' }}>
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">
-             <Package className="w-24 h-24 text-green-600" />
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-             <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
-               <Package className="w-5 h-5" />
-             </div>
-             <h3 className="font-semibold text-gray-700">Pending Orders</h3>
-          </div>
-          <p className="text-4xl font-bold text-[var(--sienna)] mt-auto flex items-end justify-between font-mono tracking-tight">
-            {orders.filter(o => o.status !== 'completed').length} <span className="text-sm font-medium text-orange-600 mb-1 flex items-center font-sans tracking-normal">Action Required</span>
-          </p>
-        </div>
-
-        <div className="card p-6 flex flex-col relative overflow-hidden group lg:col-span-1 md:col-span-2 animate-cascade" style={{ animationDelay: '200ms' }}>
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500">
-             <Tag className="w-24 h-24 text-purple-600" />
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-             <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-               <Tag className="w-5 h-5" />
-             </div>
-             <h3 className="font-semibold text-gray-700">Top Product</h3>
-          </div>
-          <div className="mt-auto">
-             <p className={`text-2xl font-bold leading-tight ${topProduct ? 'text-gray-900' : 'text-gray-400 italic font-medium'}`}>
-               {topProduct ? topProduct[0] : 'N/A'}
-             </p>
-             <p className="text-sm font-medium text-gray-500 mt-1 flex items-center gap-1.5">
-               {topProduct ? (
-                 <>
-                   <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                   {topProduct[1]} units sold today
-                 </>
-               ) : (
-                 <>
-                   <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                   Waiting for sales data
-                 </>
-               )}
-             </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Sales Trend Chart */}
-      <div className="card p-8 mb-10">
-         <div className="flex items-center justify-between mb-8">
-            <div>
-               <h3 className="text-lg font-bold text-gray-900">Sales Trend</h3>
-               <p className="text-xs text-gray-500 font-medium">Revenue performance over the last 7 days</p>
-            </div>
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+         <div>
+           <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Store Overview</h2>
+           <p className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>Insights and operations for 'The Find' today.</p>
          </div>
-         <div className="flex items-end justify-between gap-4 h-48 pt-4">
+         <div className="flex items-center gap-3">
+           <button className="px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all border border-[var(--border)] bg-[var(--warm-white)] hover:bg-[var(--parchment)]" style={{ color: 'var(--brown)' }}>
+             Download PDF
+           </button>
+           <button className="px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all shadow-md" style={{ backgroundColor: 'var(--brown)', color: 'var(--cream)' }}>
+             Generate Report
+           </button>
+         </div>
+      </div>
+
+      {/* Top Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Revenue Card */}
+        <div className="p-6 rounded-xl flex flex-col relative animate-cascade border border-[var(--border)]" style={{ backgroundColor: 'var(--warm-white)', animationDelay: '0ms' }}>
+          <div className="flex items-start justify-between mb-8">
+             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--parchment)] text-[var(--charcoal)]">
+               <TrendingUp className="w-4 h-4" />
+             </div>
+          </div>
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] mb-2" style={{ color: 'var(--text-muted)' }}>Today's Revenue</h3>
+            <p className="text-3xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--charcoal)' }}>
+              ₱{todayTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div className="mt-4 pt-4 border-t border-[var(--border)] border-dashed text-[10px] italic" style={{ color: 'var(--text-light)' }}>
+            From {todayTransactions.length} successful transactions
+          </div>
+        </div>
+
+        {/* Low Stock Card */}
+        <div className="p-6 rounded-xl flex flex-col relative animate-cascade border border-[var(--border)]" style={{ backgroundColor: 'var(--warm-white)', animationDelay: '100ms' }}>
+          <div className="flex items-start justify-between mb-8">
+             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--parchment)] text-[var(--charcoal)]">
+               <Package className="w-4 h-4" />
+             </div>
+             {lowStockProducts.length > 0 && (
+               <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-100 text-red-600">
+                 Action Needed
+               </span>
+             )}
+          </div>
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] mb-2" style={{ color: 'var(--text-muted)' }}>Low Stock Items</h3>
+            <p className="text-3xl tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--charcoal)' }}>
+              {lowStockProducts.length} Items
+            </p>
+          </div>
+          <div className="mt-4 pt-4 border-t border-[var(--border)] border-dashed text-[10px] font-semibold flex justify-between items-center" style={{ color: 'var(--text-light)' }}>
+            <span>Inventory requires attention</span>
+            <button className="underline hover:text-[var(--brown)]" onClick={() => document.getElementById('inventory-tab')?.click()}>View Inventory</button>
+          </div>
+        </div>
+
+        {/* Top Product Card */}
+        <div className="p-6 rounded-xl flex flex-col relative animate-cascade border border-[var(--border)]" style={{ backgroundColor: 'var(--warm-white)', animationDelay: '200ms' }}>
+          <div className="flex items-start justify-between mb-8">
+             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-[var(--parchment)] text-[var(--charcoal)]">
+               <Tag className="w-4 h-4" />
+             </div>
+          </div>
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] mb-2" style={{ color: 'var(--text-muted)' }}>Top Selling Item</h3>
+            <p className={`text-3xl tracking-tight truncate ${topProduct ? 'text-[var(--charcoal)]' : 'text-gray-400 italic'}`} style={{ fontFamily: "'Playfair Display', serif" }}>
+              {topProduct ? topProduct[0] : 'N/A'}
+            </p>
+          </div>
+          <div className="mt-auto pt-4 border-t border-[var(--border)] border-dashed text-[10px]" style={{ color: 'var(--text-light)' }}>
+            {topProduct ? `Sold ${topProduct[1]} times this morning` : 'Waiting for sales data'}
+          </div>
+        </div>
+      </div>
+
+      {/* Middle Section (Chart & Orders List) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        
+        {/* Sales Trend Chart Container */}
+        <div className="lg:col-span-2 p-6 rounded-xl border border-[var(--border)] flex flex-col" style={{ backgroundColor: 'var(--warm-white)' }}>
+          <div className="flex items-center justify-between mb-12">
+            <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Sales Trend <span className="text-[11px] font-sans font-medium text-gray-400 ml-1 tracking-wide">(Last 7 Days)</span></h3>
+            <button className="px-3 py-1.5 rounded-full text-[9px] uppercase font-bold tracking-wider flex items-center gap-2 border border-[var(--border)] bg-[var(--parchment)]" style={{ color: 'var(--brown)' }}>
+              <span className="w-2 h-2 rounded-full bg-[var(--brown)]"></span> WEEKLY REVENUE
+            </button>
+          </div>
+          <div className="flex items-end justify-between gap-2 md:gap-4 h-48 mt-auto relative">
+            {/* Background grid line */}
+            <div className="absolute bottom-0 left-0 w-full border-t border-dashed border-[var(--border)] z-0"></div>
             {dailySales.map((data, idx) => {
                const maxSale = Math.max(...dailySales.map(d => d.total), 100);
                const height = (data.total / maxSale) * 100;
+               const isHighlighted = idx === 5; // e.g. highlighting Saturday like the mockup
                return (
-                 <div key={data.day} className="flex-1 flex flex-col items-center gap-3 group">
-                    <div className="relative w-full flex flex-col items-center">
+                 <div key={data.day} className="flex-1 flex flex-col items-center gap-4 group z-10 h-full justify-end">
+                    <div className="relative w-full flex flex-col items-center h-full justify-end">
                        {/* Tooltip */}
-                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-bold pointer-events-none z-10">
+                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[var(--charcoal)] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-bold pointer-events-none z-20">
                          ₱{data.total.toLocaleString()}
                        </div>
                        <div 
-                         className="w-full max-w-[40px] bg-blue-600/10 group-hover:bg-blue-600 transition-all duration-500 rounded-t-lg relative overflow-hidden"
-                         style={{ height: `${Math.max(height, 5)}%` }}
+                         className="w-full max-w-[36px] transition-all duration-500 rounded-t-md"
+                         style={{ height: `${Math.max(height, 5)}%`, backgroundColor: isHighlighted ? 'var(--brown)' : 'var(--parchment)' }}
                        >
-                          <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent"></div>
                        </div>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                       {idx === 6 ? 'Today' : data.day.split(' ')[0]}
+                    <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: isHighlighted ? 'var(--charcoal)' : 'var(--text-light)' }}>
+                       {idx === 6 ? 'Sun' : ['Mon','Tue','Wed','Thu','Fri','Sat'][idx % 6]}
                     </span>
                  </div>
                );
             })}
-         </div>
+          </div>
+        </div>
+
+        {/* Pending Orders List */}
+        <div className="p-0 rounded-xl border border-[var(--border)] flex flex-col relative" style={{ backgroundColor: 'var(--warm-white)' }}>
+          <div className="p-6 flex items-center justify-between border-b border-[var(--border)]">
+            <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Pending Orders</h3>
+            <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--parchment)]" style={{ color: 'var(--charcoal)' }}>
+              {orders.filter(o => o.status !== 'completed').length}
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col divide-y divide-[var(--border)]">
+            {orders.filter(o => o.status !== 'completed').slice(0,3).map((order) => (
+              <div key={order.id} className="p-4 flex items-start gap-4 hover:bg-[var(--cream)] transition-colors cursor-pointer">
+                <div className="w-12 h-12 rounded bg-[var(--parchment)] overflow-hidden border border-[var(--border)] flex-shrink-0">
+                  {order.items[0]?.imageUrl && <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />}
+                </div>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex justify-between items-start mb-0.5">
+                    <p className="text-[13px] font-bold" style={{ color: 'var(--charcoal)' }}>Order #{order.id.toString().padStart(4, '0')}</p>
+                    <span className={`text-[8px] font-bold uppercase tracking-wider ${order.status === 'processing' ? 'text-orange-500' : 'text-blue-500'}`}>
+                      {order.status === 'processing' ? 'PREPARING' : 'NEW'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] truncate" style={{ color: 'var(--brown)' }}>{order.items.map(i => i.name).join(', ')}</p>
+                </div>
+              </div>
+            ))}
+            {orders.filter(o => o.status !== 'completed').length === 0 && (
+              <div className="p-8 text-center text-[12px]" style={{ color: 'var(--text-light)' }}>
+                No pending orders!
+              </div>
+            )}
+          </div>
+          <div className="p-4 border-t border-[var(--border)] text-center pb-6">
+            <button className="text-[10px] font-bold uppercase tracking-widest hover:underline" style={{ color: 'var(--brown)' }}>View All Orders</button>
+          </div>
+          
+          {/* Floating Action Button */}
+          <button className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-[46px] h-[46px] rounded-full text-white flex items-center justify-center shadow-[0_4px_14px_rgba(44,44,44,0.15)] hover:scale-105 transition-transform z-10 border-2 border-[var(--cream)]" style={{ backgroundColor: 'var(--brown)' }}>
+             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        </div>
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-         {/* Low Stock Alerts */}
-         <div className="card p-8 flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                 Low Stock Alerts
-               </h3>
-               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lowStockProducts.length} Items</span>
-            </div>
-            <div className="space-y-4">
-               {lowStockProducts.length === 0 ? (
-                 <div className="py-10 text-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
-                    <p className="text-sm">All items are sufficiently stocked.</p>
-                 </div>
-               ) : (
-                 lowStockProducts.map(product => (
-                   <div key={product.id} className="flex items-center justify-between p-4 rounded-xl bg-red-50/30 border border-red-100/50">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-lg bg-white border border-red-100 flex items-center justify-center text-[10px] font-bold text-red-400 overflow-hidden">
-                           {product.imageUrl ? <img src={product.imageUrl} alt="" className="w-full h-full object-cover" /> : 'IMG'}
-                         </div>
-                         <div>
-                            <p className="text-sm font-bold text-gray-900">{product.name}</p>
-                            <p className="text-xs text-gray-500">{product.category}</p>
-                         </div>
-                      </div>
-                      <div className="text-right">
-                         <p className="text-sm font-bold text-red-600">{product.stock} left</p>
-                         <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Restock Soon</p>
-                      </div>
-                   </div>
-                 ))
-               )}
-            </div>
-         </div>
-
-         {/* Category Performance */}
-         <div className="card p-8 flex flex-col">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Category Performance</h3>
-            <div className="space-y-6">
-               {Object.keys(categorySales).length === 0 ? (
-                 <div className="py-10 text-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
-                    <p className="text-sm">No sales data recorded yet.</p>
-                 </div>
-               ) : (
-                 Object.entries(categorySales).sort(([,a], [,b]) => b - a).map(([category, amount], idx) => {
-                   const maxAmount = Math.max(...Object.values(categorySales));
-                   const percentage = (amount / maxAmount) * 100;
-                   const colors = ['bg-blue-500', 'bg-purple-500', 'bg-orange-500', 'bg-green-500'];
-                   return (
-                     <div key={category} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                           <span className="font-bold text-gray-700">{category}</span>
-                           <span className="font-mono font-bold text-gray-900">₱{amount.toLocaleString()}</span>
-                        </div>
-                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                           <div 
-                             className={`h-full ${colors[idx % colors.length]} rounded-full transition-all duration-1000`} 
-                             style={{ width: `${percentage}%` }}
-                           ></div>
-                        </div>
-                     </div>
-                   );
-                 })
-               )}
-            </div>
-         </div>
-      </div>
     </div>
   );
 };

@@ -159,7 +159,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className={`sliding-container ${!isLogin ? 'is-registering' : ''}`}>
+    <div className={`sliding-container animate-in fade-in zoom-in-[0.98] duration-700 ease-out ${!isLogin ? 'is-registering' : ''}`}>
       <SuccessModal 
         isOpen={showSuccessModal} 
         onClose={() => setShowSuccessModal(false)}

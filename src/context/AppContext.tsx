@@ -9,6 +9,7 @@ export interface AppContextType {
   users: User[];
   setUsers: (users: User[]) => void;
   logout: () => void;
+  isLoggingOut: boolean;
   
   products: Product[];
   setProducts: (products: Product[]) => void;
@@ -37,6 +38,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [clientCart, setClientCart] = useState<CartItem[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,7 +59,11 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const logout = () => {
-    setUser(null);
+    setIsLoggingOut(true);
+    setTimeout(() => {
+      setUser(null);
+      setIsLoggingOut(false);
+    }, 1500);
   };
 
   return (
@@ -65,6 +71,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       user, setUser,
       users, setUsers,
       logout,
+      isLoggingOut,
       products, setProducts,
       posCart, setPosCart,
       clientCart, setClientCart,

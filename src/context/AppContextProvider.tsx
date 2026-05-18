@@ -29,6 +29,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const saved = localStorage.getItem('client_cart');
     return saved ? JSON.parse(saved) : [];
   });
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Fetch initial data from API
   useEffect(() => {
@@ -71,12 +72,16 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [clientCart]);
 
   const logout = () => {
-    setUser(null);
+    setIsLoggingOut(true);
+    setTimeout(() => {
+      setUser(null);
+      setIsLoggingOut(false);
+    }, 1500);
   };
 
   return (
     <AppContext.Provider value={{
-      user, setUser, users, setUsers, logout,
+      user, setUser, users, setUsers, logout, isLoggingOut,
       products, setProducts,
       posCart, setPosCart,
       clientCart, setClientCart,

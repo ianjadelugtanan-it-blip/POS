@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
@@ -10,6 +10,7 @@ interface ClientNavbarProps {
 
 export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, logout, clientCart } = useAppContext();
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const cartCount = clientCart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -19,7 +20,8 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
   ];
 
   return (
-    <nav className="sticky top-0 z-[100] w-full bg-white border-b border-gray-100 shadow-sm">
+    <>
+      <nav className="sticky top-0 z-[100] w-full bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -84,7 +86,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
               </button>
 
               <button 
-                onClick={logout}
+                onClick={() => setShowSignOutModal(true)}
                 className="p-2.5 rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
                 title="Sign Out"
               >
@@ -95,6 +97,35 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
 
         </div>
       </div>
-    </nav>
+      </nav>
+
+      {/* Sign Out Modal */}
+      {showSignOutModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-[var(--cream)] border border-[var(--border)] rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] max-w-sm w-full p-8 animate-in zoom-in duration-200">
+            <h3 className="text-2xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Sign Out</h3>
+            <p className="text-[13px] text-gray-600 mb-8 leading-relaxed">Are you sure you want to securely sign out of your account?</p>
+            
+            <div className="flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setShowSignOutModal(false)}
+                className="px-5 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-gray-500 hover:bg-[var(--warm-white)] border border-transparent hover:border-[var(--border)] transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowSignOutModal(false);
+                  logout();
+                }}
+                className="px-5 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-[var(--brown)] text-[var(--cream)] shadow-md hover:scale-105 transition-transform"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
