@@ -1,18 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
+import { SkeletonUserCard } from '../ui/Skeleton';
 
 export const AdminUsersManagement: React.FC = () => {
-  const { users, setUsers } = useAppContext();
+  const { users, setUsers, isLoadingUsers } = useAppContext();
   const [newUsername, setNewUsername] = useState('');
   const [newRole, setNewRole] = useState<'admin' | 'client'>('admin');
   const [newPassword, setNewPassword] = useState('');
   const [userToRemove, setUserToRemove] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Heuristic 3: Escape key dismisses the access revoke confirmation overlay
+      if (e.key === 'Escape') {
+        setUserToRemove(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleAddUser = async () => {
+    setError(null);
+    setSuccess(null);
     if (!newUsername.trim() || !newPassword.trim()) {
-      alert("Username and Password are required.");
+      setError("Username and Password are required. Please fill out both fields.");
       return;
     }
     
@@ -36,19 +52,22 @@ export const AdminUsersManagement: React.FC = () => {
         
         setNewUsername('');
         setNewPassword('');
-        alert("Account created successfully!");
+        setSuccess("Account created successfully!");
       } else {
-        alert(result.error || "Failed to create account.");
+        setError(result.error || "Failed to create account.");
       }
     } catch {
-      alert("Connection error. Is XAMPP running?");
+      setError("Connection error. Is XAMPP running?");
     }
   };
 
   const handleRemoveUser = async () => {
     if (!userToRemove) return;
+    setError(null);
+    setSuccess(null);
     if (userToRemove === 'admin' || userToRemove === 'client') {
-      alert("System core accounts cannot be removed.");
+      setError("System core accounts cannot be removed.");
+      setUserToRemove(null);
       return;
     }
 
@@ -64,11 +83,14 @@ export const AdminUsersManagement: React.FC = () => {
       if (response.ok) {
         setUsers(users.filter(u => u.username !== userToRemove));
         setUserToRemove(null);
+        setSuccess("Access revoked successfully!");
       } else {
-        alert(result.error || "Failed to remove user.");
+        setError(result.error || "Failed to remove user.");
+        setUserToRemove(null);
       }
     } catch {
-      alert("Connection error. Is XAMPP running?");
+      setError("Connection error while revoking user.");
+      setUserToRemove(null);
     }
   };
 
@@ -123,6 +145,16 @@ export const AdminUsersManagement: React.FC = () => {
                     <option value="client">Client (Store Only)</option>
                  </select>
                </div>
+                {error && (
+                  <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200 mb-2">
+                    <span className="text-xs">⚠️</span> {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="p-3 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200 mb-2">
+                    <span className="text-xs">🎉</span> {success}
+                  </div>
+                )}
                <button 
                   onClick={handleAddUser}
                   className="w-full btn-primary mt-4"
@@ -136,7 +168,11 @@ export const AdminUsersManagement: React.FC = () => {
         {/* User Grid */}
         <div className="xl:col-span-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {users.map((u, index) => (
+            {isLoadingUsers ? (
+              [1, 2, 3, 4].map((i) => (
+                <SkeletonUserCard key={i} />
+              ))
+            ) : users.map((u, index) => (
                <div key={u.username} className="card p-5 border border-gray-200 group flex flex-col hover:-translate-y-1 hover:shadow-xl transition-all duration-300 animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
                  <div className="flex justify-between items-start mb-4">
                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 shadow-sm">

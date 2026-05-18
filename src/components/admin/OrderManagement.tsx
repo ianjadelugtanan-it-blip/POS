@@ -1,12 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon, X, Trash2, Search } from 'lucide-react';
 import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
+import { SkeletonOrderCard } from '../ui/Skeleton';
 
 export const OrderManagement: React.FC = () => {
-  const { orders, setOrders } = useAppContext();
+  const { orders, setOrders, isLoadingOrders } = useAppContext();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcut '/' to focus Search input (Heuristic 7: Flexibility & Efficiency)
+      const isSlash = e.key === '/' || e.code === 'Slash' || e.keyCode === 191;
+      
+      if (isSlash && 
+          document.activeElement !== searchInputRef.current && 
+          document.activeElement?.tagName !== 'INPUT' && 
+          document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        console.log("HCI Shortcut: Focusing order search bar!");
+        searchInputRef.current?.focus();
+        setTimeout(() => {
+          searchInputRef.current?.focus();
+        }, 10);
+      }
+      // Shortcut 'Escape' to dismiss active modals (Heuristic 3: User Control & Freedom)
+      if (e.key === 'Escape') {
+        setActiveOrderForETA(null);
+        setOrderToDelete(null);
+        setReceiptView(null);
+        setOrderToDecline(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const [activeOrderForETA, setActiveOrderForETA] = useState<string | null>(null);
   const [etaDate, setEtaDate] = useState('');
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
@@ -122,7 +152,11 @@ export const OrderManagement: React.FC = () => {
         <div className="flex items-center gap-4 w-full sm:w-auto">
            <div className="relative flex-1 sm:w-64">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+             <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-bold text-gray-400 bg-gray-50 border border-gray-200 rounded shadow-sm select-none pointer-events-none">
+               /
+             </kbd>
              <input 
+                ref={searchInputRef}
                type="text"
                placeholder="Search orders..."
                value={searchQuery}
@@ -137,7 +171,12 @@ export const OrderManagement: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredOrders.map((order, index) => {
+        {isLoadingOrders ? (
+          [1, 2, 3, 4].map((i) => (
+            <SkeletonOrderCard key={i} isAdmin={true} />
+          ))
+        ) : (
+          filteredOrders.map((order, index) => {
            const StatusIcon = statusConfig[order.status].icon;
            return (
              <div key={order.id} className="card p-6 flex flex-col group animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
@@ -243,8 +282,9 @@ export const OrderManagement: React.FC = () => {
                 </div>
              </div>
            );
-        })}
-        {filteredOrders.length === 0 && (
+          })
+        )}
+        {!isLoadingOrders && filteredOrders.length === 0 && (
           <div className="col-span-full card p-12 text-center text-gray-500 flex flex-col items-center">
             <Package className="w-12 h-12 text-gray-300 mb-4" />
             <p className="text-lg font-medium text-gray-900">

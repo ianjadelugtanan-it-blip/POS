@@ -209,7 +209,7 @@ export const Login: React.FC = () => {
         <div className="w-full max-w-[400px] px-8">
             <div className="flex flex-col items-center md:items-start mb-8">
                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-sienna flex items-center justify-center shadow-lg shadow-sienna/20">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4752B] flex items-center justify-center shadow-lg shadow-[#C4752B]/20">
                      <Shirt className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-xl font-bold text-brown tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>The Find</span>
@@ -222,7 +222,7 @@ export const Login: React.FC = () => {
            </div>
 
            {error && isLogin && (
-             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-rust border border-red-100">
+             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-100">
                {error}
              </div>
            )}
@@ -269,7 +269,7 @@ export const Login: React.FC = () => {
         <div className="w-full max-w-[400px] px-8">
             <div className="flex flex-col items-center md:items-start mb-8">
                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-sienna flex items-center justify-center shadow-lg shadow-sienna/20">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4752B] flex items-center justify-center shadow-lg shadow-[#C4752B]/20">
                      <Shirt className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-xl font-bold text-brown tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>The Find</span>
@@ -282,7 +282,7 @@ export const Login: React.FC = () => {
            </div>
 
            {error && !isLogin && (
-             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-rust border border-red-100">
+             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-100">
                {error}
              </div>
            )}

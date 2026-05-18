@@ -67,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
             return (
               <button
                 key={id}
+                id={`${id}-tab`}
                 onClick={() => handleTabSelect(id)}
                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg text-[13px] font-semibold transition-all duration-300 group animate-cascade ${isActive ? 'bg-[var(--parchment)]/50' : 'hover:bg-[var(--parchment)]/30'}`}
                 style={{

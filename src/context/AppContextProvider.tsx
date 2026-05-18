@@ -30,32 +30,58 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
   // Fetch initial data from API
   useEffect(() => {
     const fetchInitialData = async () => {
+      // Initialize loading states
+      setIsLoadingProducts(true);
+      setIsLoadingUsers(true);
+      setIsLoadingOrders(true);
+
+      // 1. Fetch Products
       try {
-        // Fetch Products
         const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
         if (prodRes.ok) setProducts(await prodRes.json());
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
 
-        // Fetch Users (if admin)
-        if (user?.role === 'admin') {
+      // 2. Fetch Users (if admin)
+      if (user?.role === 'admin') {
+        try {
           const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
           if (userRes.ok) setUsers(await userRes.json());
+        } catch (error) {
+          console.error("Failed to fetch users:", error);
+        } finally {
+          setIsLoadingUsers(false);
         }
+      } else {
+        setIsLoadingUsers(false);
+      }
 
-        // Fetch Orders
-        if (user) {
+      // 3. Fetch Orders
+      if (user) {
+        try {
           const url = user.role === 'admin' 
             ? `${API_BASE_URL}/orders/get.php` 
             : `${API_BASE_URL}/orders/get.php?username=${encodeURIComponent(user.username)}`;
             
           const orderRes = await fetch(url);
           if (orderRes.ok) setOrders(await orderRes.json());
+        } catch (error) {
+          console.error("Failed to fetch orders:", error);
+        } finally {
+          setIsLoadingOrders(false);
         }
-      } catch (error) {
-        console.error("Failed to fetch initial data:", error);
+      } else {
+        setIsLoadingOrders(false);
       }
     };
 
@@ -86,7 +112,10 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       posCart, setPosCart,
       clientCart, setClientCart,
       transactions, setTransactions,
-      orders, setOrders
+      orders, setOrders,
+      isLoadingProducts,
+      isLoadingUsers,
+      isLoadingOrders
     }}>
       {children}
     </AppContext.Provider>

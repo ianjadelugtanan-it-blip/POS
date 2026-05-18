@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Plus, Trash2, ImagePlus, Pencil } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
+import { SkeletonTableRow } from '../ui/Skeleton';
 
 export const Inventory: React.FC = () => {
-  const { products, setProducts } = useAppContext();
+  const { products, setProducts, isLoadingProducts } = useAppContext();
   
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
@@ -13,6 +14,25 @@ export const Inventory: React.FC = () => {
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Heuristic 3: Escape key dismisses manual forms and delete actions
+      if (e.key === 'Escape') {
+        setShowForm(false);
+        setEditingId(null);
+        setDeletingId(null);
+        setName('');
+        setPrice('');
+        setStock('');
+        setCategory('');
+        setImageUrl('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,8 +56,6 @@ export const Inventory: React.FC = () => {
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     if (deletingId !== id) {
@@ -189,61 +207,67 @@ export const Inventory: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {products.map((product, index) => (
-                <tr key={product.id} className="hover:bg-gray-50 transition-colors group animate-cascade" style={{ animationDelay: `${index * 50}ms` }}>
-                  <td className="p-4 pl-6 text-sm font-mono text-gray-500">
-                    {product.id}
-                  </td>
-                  <td className="p-4">
-                    <div className="font-medium text-gray-900">{product.name}</div>
-                  </td>
-                  <td className="p-4">
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt="preview" className="w-10 h-10 object-cover rounded-md shadow-sm border border-gray-200" />
-                    ) : (
-                      <div className="w-10 h-10 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center text-xs text-gray-400 font-bold">N/A</div>
-                    )}
-                  </td>
-                  <td className="p-4 text-sm">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                      {product.category}
-                    </span>
-                  </td>
-                  <td className="p-4 font-mono font-medium text-gray-900">
-                    ₱{product.price.toFixed(2)}
-                  </td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${product.stock <= 5 ? 'text-red-600' : 'text-green-600'}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${product.stock <= 5 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></div>
-                      {product.stock} units
-                    </span>
-                  </td>
-                  <td className="p-4 pr-6">
-                    <div className="flex items-center justify-center gap-2">
-                      <button 
-                        onClick={() => handleEdit(product)}
-                        className="p-2 rounded-lg transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                        aria-label="Edit product"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(product.id)}
-                        className={`p-2 rounded-lg transition-colors flex items-center gap-2 ${
-                          deletingId === product.id 
-                            ? 'bg-red-500 text-white hover:bg-red-600 px-3' 
-                            : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
-                        }`}
-                        aria-label="Delete product"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {deletingId === product.id && <span className="text-xs font-bold">Confirm</span>}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {products.length === 0 && (
+              {isLoadingProducts ? (
+                [1, 2, 3, 4, 5].map((i) => (
+                  <SkeletonTableRow key={i} />
+                ))
+              ) : (
+                products.map((product, index) => (
+                  <tr key={product.id} className="hover:bg-gray-50 transition-colors group animate-cascade" style={{ animationDelay: `${index * 50}ms` }}>
+                    <td className="p-4 pl-6 text-sm font-mono text-gray-500">
+                      {product.id}
+                    </td>
+                    <td className="p-4">
+                      <div className="font-medium text-gray-900">{product.name}</div>
+                    </td>
+                    <td className="p-4">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt="preview" className="w-10 h-10 object-cover rounded-md shadow-sm border border-gray-200" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center text-xs text-gray-400 font-bold">N/A</div>
+                      )}
+                    </td>
+                    <td className="p-4 text-sm">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="p-4 font-mono font-medium text-gray-900">
+                      ₱{product.price.toFixed(2)}
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${product.stock <= 5 ? 'text-red-600' : 'text-green-600'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${product.stock <= 5 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></div>
+                        {product.stock} units
+                      </span>
+                    </td>
+                    <td className="p-4 pr-6">
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => handleEdit(product)}
+                          className="p-2 rounded-lg transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                          aria-label="Edit product"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          className={`p-2 rounded-lg transition-colors flex items-center gap-2 ${
+                            deletingId === product.id 
+                              ? 'bg-red-500 text-white hover:bg-red-600 px-3' 
+                              : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                          }`}
+                          aria-label="Delete product"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {deletingId === product.id && <span className="text-xs font-bold">Confirm</span>}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+              {!isLoadingProducts && products.length === 0 && (
                 <tr>
                   <td colSpan={7} className="p-12 text-center text-gray-400">
                     <div className="flex flex-col items-center justify-center space-y-4">

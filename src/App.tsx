@@ -15,15 +15,31 @@ import { Checkout } from './components/client/Checkout';
 import { MyOrders } from './components/client/MyOrders';
 import { ClientNavbar } from './components/client/ClientNavbar';
 import { Footer } from './components/Footer';
-import { Menu, Shirt, Search, Bell, HelpCircle, LogOut } from 'lucide-react';
+import { Menu, Shirt, Search, Bell, LogOut } from 'lucide-react';
+import { SkeletonDashboard, SkeletonProductCard, SkeletonTableRow, SkeletonOrderCard, SkeletonUserCard } from './components/ui/Skeleton';
 
 const MainApp: React.FC = () => {
   const { user, products, orders, isLoggingOut } = useAppContext();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [isTabLoading, setIsTabLoading] = useState(false);
+  const [loadingTab, setLoadingTab] = useState<string>('');
+
+  const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return;
+    setLoadingTab(tab);
+    setIsTabLoading(true);
+    
+    // Simulate database fetch & network lag on slow connection/3G
+    setTimeout(() => {
+      setActiveTab(tab);
+      setIsTabLoading(false);
+      setLoadingTab('');
+    }, 600);
+  };
+
   const [isCheckout, setIsCheckout] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   
   // Welcome screen animation states
   const [showWelcome, setShowWelcome] = useState(false);
@@ -62,7 +78,7 @@ const MainApp: React.FC = () => {
 
   const handleCheckoutComplete = () => {
     setIsCheckout(false);
-    setActiveTab('my-orders');
+    handleTabChange('my-orders');
   };
 
   return (
@@ -70,14 +86,14 @@ const MainApp: React.FC = () => {
       {user.role === 'admin' ? (
         <Sidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           isOpen={isSidebarOpen}
           setIsOpen={setIsSidebarOpen}
         />
       ) : (
         <ClientNavbar 
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
         />
       )}
 
@@ -111,13 +127,15 @@ const MainApp: React.FC = () => {
               {/* Notifications Dropdown */}
               <div className="relative">
                 <button 
-                  onClick={() => { setIsNotificationsOpen(!isNotificationsOpen); setIsHelpOpen(false); }}
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                   className={`relative transition-colors ${isNotificationsOpen ? 'text-[var(--brown)]' : 'text-gray-500 hover:text-[var(--brown)]'}`} 
                   title="Notifications"
                 >
                   <Bell className="w-[18px] h-[18px]" />
                   {totalNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-[var(--cream)] rounded-full"></span>
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-[var(--cream)] shadow-sm leading-none">
+                      {totalNotifications}
+                    </span>
                   )}
                 </button>
 
@@ -156,29 +174,7 @@ const MainApp: React.FC = () => {
                 )}
               </div>
 
-              {/* Help Dropdown */}
-              <div className="relative">
-                <button 
-                  onClick={() => { setIsHelpOpen(!isHelpOpen); setIsNotificationsOpen(false); }}
-                  className={`transition-colors ${isHelpOpen ? 'text-[var(--brown)]' : 'text-gray-500 hover:text-[var(--brown)]'}`} 
-                  title="Help & Support"
-                >
-                  <HelpCircle className="w-[18px] h-[18px]" />
-                </button>
 
-                {isHelpOpen && (
-                  <div className="absolute top-full right-0 mt-6 w-56 bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-[var(--border)] overflow-hidden z-50 animate-cascade">
-                    <div className="p-4 border-b border-[var(--border)] bg-[var(--warm-white)]">
-                      <h3 className="text-[11px] font-bold uppercase tracking-wider text-[var(--charcoal)]">Support Center</h3>
-                    </div>
-                    <div className="py-2">
-                      <button className="w-full text-left px-4 py-2.5 text-[12px] text-gray-600 hover:bg-[var(--warm-white)] hover:text-[var(--brown)] transition-colors">Contact Support</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="h-5 w-px bg-[var(--border)] hidden sm:block"></div>
               <span className="hidden sm:block text-[15px] tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>
                 The Find Thrift Shop
               </span>
@@ -188,26 +184,108 @@ const MainApp: React.FC = () => {
 
         <main className={`relative z-10 min-h-full ${user.role === 'admin' ? 'px-5 py-7 md:px-10 md:py-10 max-w-[1500px]' : 'px-4 py-8 md:px-8 md:py-12 max-w-7xl'} mx-auto`}>
           {user.role === 'admin' ? (
-            <>
-              {activeTab === 'dashboard' && <Dashboard />}
-              {activeTab === 'pos' && <POSCashier />}
-              {activeTab === 'inventory' && <Inventory />}
-              {activeTab === 'orders' && <OrderManagement />}
-              {activeTab === 'sales-report' && <SalesReport />}
-              {activeTab === 'users' && <AdminUsersManagement />}
-            </>
+            isTabLoading ? (
+              <div className="animate-in fade-in duration-300">
+                {loadingTab === 'dashboard' && <SkeletonDashboard />}
+                {loadingTab === 'pos' && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => <SkeletonProductCard key={i} variant="pos" />)}
+                  </div>
+                )}
+                {loadingTab === 'inventory' && (
+                  <div className="space-y-4">
+                    <div className="h-10 w-48 bg-gray-200 rounded animate-pulse" />
+                    <div className="border border-[var(--border)] rounded-xl overflow-hidden bg-white">
+                      {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} />)}
+                    </div>
+                  </div>
+                )}
+                {loadingTab === 'orders' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, i) => <SkeletonOrderCard key={i} isAdmin={true} />)}
+                  </div>
+                )}
+                {loadingTab === 'sales-report' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="p-6 rounded-xl border border-[var(--border)] bg-white h-32 skeleton-shimmer" />
+                      ))}
+                    </div>
+                    <div className="border border-[var(--border)] rounded-xl overflow-hidden bg-white">
+                      {[...Array(5)].map((_, i) => <SkeletonTableRow key={i} />)}
+                    </div>
+                  </div>
+                )}
+                {loadingTab === 'users' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => <SkeletonUserCard key={i} />)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {activeTab === 'dashboard' && <Dashboard />}
+                {activeTab === 'pos' && <POSCashier />}
+                {activeTab === 'inventory' && <Inventory />}
+                {activeTab === 'orders' && <OrderManagement />}
+                {activeTab === 'sales-report' && <SalesReport />}
+                {activeTab === 'users' && <AdminUsersManagement />}
+              </>
+            )
           ) : (
-            <>
-              {activeTab === 'shop' && <Shop />}
-              {activeTab === 'cart' && (
-                isCheckout ? (
-                  <Checkout onBackToCart={() => setIsCheckout(false)} onOrderComplete={handleCheckoutComplete} />
-                ) : (
-                  <Cart onProceedToCheckout={() => setIsCheckout(true)} />
-                )
-              )}
-              {activeTab === 'my-orders' && <MyOrders />}
-            </>
+            isTabLoading ? (
+              <div className="animate-in fade-in duration-300">
+                {loadingTab === 'shop' && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {[...Array(8)].map((_, i) => <SkeletonProductCard key={i} variant="shop" />)}
+                  </div>
+                )}
+                {loadingTab === 'cart' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6" />
+                      {[...Array(2)].map((_, i) => (
+                        <div key={i} className="flex gap-4 p-4 rounded-xl border border-[var(--border)] bg-white">
+                          <div className="w-20 h-20 bg-gray-100 rounded-lg skeleton-shimmer flex-shrink-0" />
+                          <div className="flex-1 space-y-2 pt-2">
+                            <div className="h-4 w-1/3 bg-gray-100 rounded animate-pulse" />
+                            <div className="h-3 w-1/4 bg-gray-100 rounded animate-pulse" />
+                            <div className="h-5 w-16 bg-gray-100 rounded animate-pulse mt-2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-6 rounded-xl border border-[var(--border)] bg-white h-64 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="h-5 w-1/3 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-px bg-[var(--border)]" />
+                        <div className="h-4 w-full bg-gray-100 rounded animate-pulse" />
+                        <div className="h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
+                      </div>
+                      <div className="h-10 w-full bg-gray-100 rounded animate-pulse" />
+                    </div>
+                  </div>
+                )}
+                {loadingTab === 'my-orders' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, i) => <SkeletonOrderCard key={i} isAdmin={false} />)}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {activeTab === 'shop' && <Shop />}
+                {activeTab === 'cart' && (
+                  isCheckout ? (
+                    <Checkout onBackToCart={() => setIsCheckout(false)} onOrderComplete={handleCheckoutComplete} />
+                  ) : (
+                    <Cart onProceedToCheckout={() => setIsCheckout(true)} />
+                  )
+                )}
+                {activeTab === 'my-orders' && <MyOrders />}
+              </>
+            )
           )}
         </main>
         <Footer />

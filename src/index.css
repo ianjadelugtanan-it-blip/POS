@@ -66,6 +66,33 @@
     to   { background-position: 200% center; }
   }
 
+  @keyframes skeleton-shimmer {
+    0% { background-position: 150% 0; }
+    100% { background-position: -150% 0; }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(92, 61, 46, 0.05) 25%,
+      rgba(92, 61, 46, 0.12) 37%,
+      rgba(92, 61, 46, 0.05) 63%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s infinite ease-in-out;
+  }
+
+  .skeleton-shimmer-light {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      rgba(255, 255, 255, 0.3) 37%,
+      rgba(255, 255, 255, 0.15) 63%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s infinite ease-in-out;
+  }
+
   .animate-cascade {
     animation: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   }

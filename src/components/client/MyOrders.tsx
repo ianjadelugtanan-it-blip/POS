@@ -4,12 +4,25 @@ import { Package, Clock, RotateCw, CheckCircle, FileText, Trash2, X } from 'luci
 import { useAppContext } from '../../context/AppContext';
 import type { OrderStatus } from '../../types';
 import { API_BASE_URL } from '../../config';
+import { SkeletonOrderCard } from '../ui/Skeleton';
 
 export const MyOrders: React.FC = () => {
-  const { orders, user, setOrders, setProducts } = useAppContext();
+  const { orders, user, setOrders, setProducts, isLoadingOrders } = useAppContext();
   const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
   const [selectedReceipt, setSelectedReceipt] = React.useState<any | null>(null);
   const [orderToCancel, setOrderToCancel] = React.useState<string | null>(null);
+  
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Heuristic 3: Escape key dismisses modal screens in client MyOrders
+      if (e.key === 'Escape') {
+        setSelectedReceipt(null);
+        setOrderToCancel(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   
   const myOrders = orders.filter(o => o.username === user?.username);
   const filteredOrders = filter === 'all' ? myOrders : myOrders.filter(o => o.status === filter);
@@ -80,7 +93,12 @@ export const MyOrders: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredOrders.map((order, index) => {
+        {isLoadingOrders ? (
+          [1, 2, 3, 4].map((i) => (
+            <SkeletonOrderCard key={i} />
+          ))
+        ) : (
+          filteredOrders.map((order, index) => {
             const StatusIcon = statusConfig[order.status].icon;
             return (
               <div key={order.id} className="card p-6 flex flex-col group border border-gray-100 hover:border-blue-200 transition-colors animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
@@ -174,8 +192,9 @@ export const MyOrders: React.FC = () => {
                 </div>
               </div>
             );
-        })}
-        {filteredOrders.length === 0 && (
+          })
+        )}
+        {!isLoadingOrders && filteredOrders.length === 0 && (
           <div className="col-span-full card p-16 text-center flex flex-col items-center justify-center border-dashed bg-gray-50/30">
             <div className="w-16 h-16 bg-white rounded-full border border-gray-100 flex items-center justify-center mb-4 shadow-sm">
                <Package className="w-8 h-8 text-gray-300" />

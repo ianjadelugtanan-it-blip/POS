@@ -1,10 +1,19 @@
 import React from 'react';
 import { TrendingUp, Package, Tag } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { SkeletonDashboard } from '../ui/Skeleton';
 
 export const Dashboard: React.FC = () => {
-  const { orders, products } = useAppContext();
+  const { orders, products, isLoadingProducts, isLoadingOrders } = useAppContext();
   
+  if (isLoadingProducts || isLoadingOrders) {
+    return (
+      <div className="animate-in fade-in duration-300 max-w-6xl">
+        <SkeletonDashboard />
+      </div>
+    );
+  }
+
   const todayTransactions = orders.filter(o => {
     if (o.status !== 'completed') return false;
     const orderDate = new Date(o.date.replace(' ', 'T') + 'Z'); 
@@ -54,14 +63,7 @@ export const Dashboard: React.FC = () => {
            <h2 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Store Overview</h2>
            <p className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>Insights and operations for 'The Find' today.</p>
          </div>
-         <div className="flex items-center gap-3">
-           <button className="px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all border border-[var(--border)] bg-[var(--warm-white)] hover:bg-[var(--parchment)]" style={{ color: 'var(--brown)' }}>
-             Download PDF
-           </button>
-           <button className="px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all shadow-md" style={{ backgroundColor: 'var(--brown)', color: 'var(--cream)' }}>
-             Generate Report
-           </button>
-         </div>
+
       </div>
 
       {/* Top Cards Row */}
