@@ -3,7 +3,11 @@ import { TrendingUp, Package, Tag } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { SkeletonDashboard } from '../ui/Skeleton';
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onNavigate?: (tab: string) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { orders, products, isLoadingProducts, isLoadingOrders } = useAppContext();
   
   if (isLoadingProducts || isLoadingOrders) {
@@ -106,7 +110,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="mt-4 pt-4 border-t border-[var(--border)] border-dashed text-[10px] font-semibold flex justify-between items-center" style={{ color: 'var(--text-light)' }}>
             <span>Inventory requires attention</span>
-            <button className="underline hover:text-[var(--brown)]" onClick={() => document.getElementById('inventory-tab')?.click()}>View Inventory</button>
+            <button className="underline hover:text-[var(--brown)]" onClick={() => onNavigate?.('inventory')}>View Inventory</button>
           </div>
         </div>
 
@@ -124,7 +128,7 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
           <div className="mt-auto pt-4 border-t border-[var(--border)] border-dashed text-[10px]" style={{ color: 'var(--text-light)' }}>
-            {topProduct ? `Sold ${topProduct[1]} times this morning` : 'Waiting for sales data'}
+            {topProduct ? `${topProduct[1]} unit(s) sold all-time` : 'Waiting for sales data'}
           </div>
         </div>
       </div>
@@ -161,7 +165,7 @@ export const Dashboard: React.FC = () => {
                        </div>
                     </div>
                     <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: isHighlighted ? 'var(--charcoal)' : 'var(--text-light)' }}>
-                       {idx === 6 ? 'Sun' : ['Mon','Tue','Wed','Thu','Fri','Sat'][idx % 6]}
+                       {new Date(data.day).toLocaleDateString('en-US', { weekday: 'short' })}
                     </span>
                  </div>
                );
@@ -201,13 +205,14 @@ export const Dashboard: React.FC = () => {
             )}
           </div>
           <div className="p-4 border-t border-[var(--border)] text-center pb-6">
-            <button className="text-[10px] font-bold uppercase tracking-widest hover:underline" style={{ color: 'var(--brown)' }}>View All Orders</button>
+            <button
+              className="text-[10px] font-bold uppercase tracking-widest hover:underline"
+              style={{ color: 'var(--brown)' }}
+              onClick={() => onNavigate?.('orders')}
+            >
+              View All Orders
+            </button>
           </div>
-          
-          {/* Floating Action Button */}
-          <button className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-[46px] h-[46px] rounded-full text-white flex items-center justify-center shadow-[0_4px_14px_rgba(44,44,44,0.15)] hover:scale-105 transition-transform z-10 border-2 border-[var(--cream)]" style={{ backgroundColor: 'var(--brown)' }}>
-             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
         </div>
 
       </div>

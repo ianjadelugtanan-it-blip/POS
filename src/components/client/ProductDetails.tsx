@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Minus, Plus, ShoppingBag, Heart, Star, Share2, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingBag, Heart, ShieldCheck, Truck } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { ProductCard } from '../ProductCard';
@@ -74,29 +74,13 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
               <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
           </div>
-          
-          {/* Thumbnails (Mocked) */}
-          <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-             {[1, 2, 3].map((i) => (
-                <div key={i} className={`w-20 h-24 flex-shrink-0 rounded-xl overflow-hidden cursor-pointer border-2 ${i === 1 ? 'border-gray-900' : 'border-transparent opacity-60 hover:opacity-100'}`}>
-                   {product.imageUrl ? (
-                     <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
-                   ) : (
-                     <div className="w-full h-full bg-gray-200" />
-                   )}
-                </div>
-             ))}
-          </div>
         </div>
 
         {/* Right Column: Product Info */}
         <div className="w-full lg:w-1/2 flex flex-col pt-2 lg:pt-10">
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
                <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest">{product.category}</p>
-               <button className="text-gray-400 hover:text-gray-900 transition-colors">
-                  <Share2 className="w-5 h-5" />
-               </button>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
               {product.name}

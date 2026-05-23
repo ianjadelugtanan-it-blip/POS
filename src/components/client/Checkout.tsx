@@ -53,7 +53,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
       status: 'pending',
       date: new Date().toISOString().slice(0, 19).replace('T', ' '),
       paymentMethod,
-      receiptImage
+      receiptImage: receiptImage || undefined
     };
 
     try {
@@ -185,13 +185,12 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
                   <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-4">
                     <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-6">
                        <div className="w-32 h-32 bg-white p-2 rounded-xl border-2 border-dashed border-blue-200 flex-shrink-0 flex items-center justify-center relative group">
-                          {/* Placeholder QR Code UI */}
-                          <div className="w-full h-full bg-gray-50 flex items-center justify-center text-blue-600">
-                             <div className="grid grid-cols-3 gap-1">
-                                {[...Array(9)].map((_, i) => <div key={i} className="w-2 h-2 bg-blue-600 rounded-sm"></div>)}
-                             </div>
+                          {/* Demo QR Placeholder */}
+                          <div className="w-full h-full bg-blue-50 flex flex-col items-center justify-center gap-1">
+                            <div className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">QR Code</div>
+                            <div className="text-blue-600 text-[10px] font-black uppercase tracking-widest border border-dashed border-blue-300 px-2 py-1 rounded">Demo Mode</div>
                           </div>
-                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-800 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity">SCAN ME</span>
+                          <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-blue-800 bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity">DEMO</span>
                        </div>
                        <div className="flex-1">
                           <h4 className="font-bold text-blue-900 mb-1">GCash Payment</h4>

@@ -20,7 +20,7 @@ export const OrderManagement: React.FC = () => {
           document.activeElement?.tagName !== 'INPUT' && 
           document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault();
-        console.log("HCI Shortcut: Focusing order search bar!");
+
         searchInputRef.current?.focus();
         setTimeout(() => {
           searchInputRef.current?.focus();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from './context/AppContext';
 import { AppContextProvider } from './context/AppContextProvider';
 import { Login } from './components/Login';
@@ -25,9 +25,18 @@ const MainApp: React.FC = () => {
   const [loadingTab, setLoadingTab] = useState<string>('');
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
+    if (tab === activeTab) {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
     setLoadingTab(tab);
     setIsTabLoading(true);
+    
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     
     // Simulate database fetch & network lag on slow connection/3G
     setTimeout(() => {
@@ -46,12 +55,46 @@ const MainApp: React.FC = () => {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [prevUser, setPrevUser] = useState(user);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    // Trigger animation when moving from logged-out to logged-in
-    if (!prevUser && user) {
-      setShowWelcome(true);
-      setIsFadingOut(false);
-      
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    if (isNotificationsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isNotificationsOpen]);
+
+  // Intercept the very first frame of login to prevent UI flash
+  if (user && !prevUser) {
+    setPrevUser(user);
+    setActiveTab(user.role === 'admin' ? 'dashboard' : 'shop');
+    setShowWelcome(true);
+    setIsFadingOut(false);
+  } else if (!user && prevUser) {
+    setPrevUser(user);
+  }
+
+  useEffect(() => {
+    if (showWelcome && !isFadingOut) {
       const fadeTimer = setTimeout(() => {
         setIsFadingOut(true);
         const removeTimer = setTimeout(() => setShowWelcome(false), 600); // Wait for fade out
@@ -60,8 +103,7 @@ const MainApp: React.FC = () => {
       
       return () => clearTimeout(fadeTimer);
     }
-    setPrevUser(user);
-  }, [user, prevUser]);
+  }, [showWelcome, isFadingOut]);
 
   const lowStockProducts = products ? products.filter(p => p.stock < 5) : [];
   const pendingOrders = orders ? orders.filter(o => o.status !== 'completed') : [];
@@ -97,7 +139,7 @@ const MainApp: React.FC = () => {
         />
       )}
 
-      <div className="flex-1 overflow-y-auto relative">
+      <div className="flex-1 overflow-y-auto relative" ref={scrollContainerRef}>
         {/* Subtle dot texture overlay */}
         <div className="absolute inset-0 pointer-events-none z-0 opacity-30"
           style={{ backgroundImage: 'radial-gradient(#C9B99A 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -125,15 +167,15 @@ const MainApp: React.FC = () => {
             <div className="flex items-center gap-6 ml-auto">
               
               {/* Notifications Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={notificationsRef}>
                 <button 
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className={`relative transition-colors ${isNotificationsOpen ? 'text-[var(--brown)]' : 'text-gray-500 hover:text-[var(--brown)]'}`} 
+                  className={`relative p-2 rounded-full transition-all ${isNotificationsOpen ? 'text-[var(--brown)] bg-gray-200/50' : 'text-gray-500 hover:text-[var(--brown)] hover:bg-gray-200/50'}`} 
                   title="Notifications"
                 >
-                  <Bell className="w-[18px] h-[18px]" />
+                  <Bell className="w-[22px] h-[22px]" />
                   {totalNotifications > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-[var(--cream)] shadow-sm leading-none">
+                    <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-[var(--cream)] shadow-sm leading-none">
                       {totalNotifications}
                     </span>
                   )}
@@ -225,7 +267,7 @@ const MainApp: React.FC = () => {
               </div>
             ) : (
               <>
-                {activeTab === 'dashboard' && <Dashboard />}
+                {activeTab === 'dashboard' && <Dashboard onNavigate={handleTabChange} />}
                 {activeTab === 'pos' && <POSCashier />}
                 {activeTab === 'inventory' && <Inventory />}
                 {activeTab === 'orders' && <OrderManagement />}

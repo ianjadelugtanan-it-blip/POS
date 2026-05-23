@@ -21,12 +21,12 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
 
   return (
     <>
-      <nav className="sticky top-0 z-[100] w-full bg-white border-b border-gray-100 shadow-sm">
+      <nav className="sticky top-0 z-[100] w-full border-b border-white/10 shadow-sm" style={{ background: 'linear-gradient(90deg, var(--brown) 0%, #9C5D22 100%)' }}>
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Mobile Menu Toggle */}
-          <button className="md:hidden p-2 -ml-2 text-gray-500">
+          <button className="md:hidden p-2 -ml-2 text-white/80 hover:text-white">
             <Menu className="w-6 h-6" />
           </button>
 
@@ -35,12 +35,12 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
             className="flex items-center gap-2.5 cursor-pointer group"
             onClick={() => setActiveTab('shop')}
           >
-            <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center transition-transform group-hover:scale-105">
+            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-transform group-hover:scale-105">
               <Shirt className="w-5 h-5 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tighter leading-none" style={{ fontFamily: "'Playfair Display', serif" }}>THE FIND</span>
-              <span className="text-[9px] font-bold tracking-[0.3em] text-gray-400 uppercase">Est. 2024</span>
+              <span className="text-xl font-black tracking-tighter leading-none text-white" style={{ fontFamily: "'Playfair Display', serif" }}>THE FIND</span>
+              <span className="text-[9px] font-bold tracking-[0.3em] text-white/60 uppercase">Est. 2024</span>
             </div>
           </div>
 
@@ -51,12 +51,12 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 flex items-center gap-2 ${
-                  activeTab === item.id ? 'text-black' : 'text-gray-400 hover:text-black'
+                  activeTab === item.id ? 'text-white' : 'text-white/60 hover:text-white'
                 }`}
               >
                 {item.label}
                 {activeTab === item.id && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-left-1" />
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white animate-in fade-in slide-in-from-left-1" />
                 )}
               </button>
             ))}
@@ -67,19 +67,19 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
             <div className="flex items-center gap-1 sm:gap-2">
               {/* User Profile / Logout */}
               <div className="hidden sm:flex flex-col items-end mr-2">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Welcome</span>
-                <span className="text-xs font-bold text-black truncate max-w-[80px]">{user?.username}</span>
+                <span className="text-[10px] font-bold text-white/60 uppercase tracking-tighter">Welcome</span>
+                <span className="text-xs font-bold text-white truncate max-w-[80px]">{user?.username}</span>
               </div>
 
               <button 
                 onClick={() => setActiveTab('cart')}
                 className={`p-2.5 rounded-full transition-all relative ${
-                  activeTab === 'cart' ? 'bg-black text-white shadow-lg' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                  activeTab === 'cart' ? 'bg-white/20 text-white shadow-lg' : 'bg-white/10 text-white/80 hover:bg-white/20'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/20">
                     {cartCount}
                   </span>
                 )}
@@ -87,7 +87,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
 
               <button 
                 onClick={() => setShowSignOutModal(true)}
-                className="p-2.5 rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                className="p-2.5 rounded-full bg-white/10 text-white/80 hover:bg-red-500/20 hover:text-red-200 transition-all"
                 title="Sign Out"
               >
                 <LogOut className="w-5 h-5" />

@@ -3,26 +3,20 @@ import { Activity, Calendar, Server, Globe } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export const SalesReport: React.FC = () => {
-  const { transactions, orders } = useAppContext();
+  const { orders } = useAppContext();
 
-  // Merge POS transactions and Completed Online Orders into a single ledger array
-  const completedOrdersAsTransactions = orders
+  // Map completed orders to Ledger entries based on customer type
+  const mergedLedger = orders
     .filter(o => o.status === 'completed')
-    .map(o => ({
-      ...o,
-      source: 'Online Checkout',
-      sourceIcon: Globe
-    }));
-
-  const posTransactions = transactions.map(t => ({
-      ...t,
-      source: 'Terminal POS',
-      sourceIcon: Server
-  }));
-
-  const mergedLedger = [...posTransactions, ...completedOrdersAsTransactions].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+    .map(o => {
+      const isWalkIn = o.customerName === 'Walk-in Customer';
+      return {
+        ...o,
+        source: isWalkIn ? 'Terminal POS' : 'Online Checkout',
+        sourceIcon: isWalkIn ? Server : Globe
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const totalRevenue = mergedLedger.reduce((sum, t) => sum + t.total, 0);
   const avgOrderValue = mergedLedger.length > 0 ? totalRevenue / mergedLedger.length : 0;
