@@ -15,14 +15,17 @@ import { Checkout } from './components/client/Checkout';
 import { MyOrders } from './components/client/MyOrders';
 import { ClientNavbar } from './components/client/ClientNavbar';
 import { Footer } from './components/Footer';
-import { Menu, Shirt, Search, Bell, LogOut } from 'lucide-react';
+import { Menu, Shirt, Search, Bell, LogOut, Sun, Moon } from 'lucide-react';
 import { SkeletonDashboard, SkeletonProductCard, SkeletonTableRow, SkeletonOrderCard, SkeletonUserCard } from './components/ui/Skeleton';
+import { useTheme } from './hooks/useTheme';
 
 const MainApp: React.FC = () => {
   const { user, products, orders, isLoggingOut } = useAppContext();
+  const { theme, toggleTheme } = useTheme(user !== null, isLoggingOut);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
-  const [isTabLoading, setIsTabLoading] = useState(false);
-  const [loadingTab, setLoadingTab] = useState<string>('');
+  // loadingTab and isTabLoading are derived here; real loading only occurs on initial app load
+  const loadingTab = activeTab;
+  const isTabLoading = false;
 
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) {
@@ -31,19 +34,12 @@ const MainApp: React.FC = () => {
       }
       return;
     }
-    setLoadingTab(tab);
-    setIsTabLoading(true);
-    
+    // Switch instantly — data is already in memory from the initial fetch.
+    // Skeleton loaders only show during the real API load on app start.
+    setActiveTab(tab);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    // Simulate database fetch & network lag on slow connection/3G
-    setTimeout(() => {
-      setActiveTab(tab);
-      setIsTabLoading(false);
-      setLoadingTab('');
-    }, 600);
   };
 
   const [isCheckout, setIsCheckout] = useState(false);
@@ -107,7 +103,10 @@ const MainApp: React.FC = () => {
 
   const lowStockProducts = products ? products.filter(p => p.stock < 5) : [];
   const pendingOrders = orders ? orders.filter(o => o.status !== 'completed') : [];
-  const totalNotifications = lowStockProducts.length + pendingOrders.length;
+  
+  let totalNotifications = 0;
+  if (lowStockProducts.length > 0) totalNotifications += 1;
+  if (pendingOrders.length > 0) totalNotifications += 1;
 
   if (!user) return <Login />;
 
@@ -152,7 +151,7 @@ const MainApp: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Search orders, inventory or staff..." 
-                className="w-full bg-[var(--cream)] border border-[var(--border)] rounded-full pl-11 pr-4 py-2.5 text-[13px] outline-none focus:border-[var(--border-strong)] transition-colors placeholder:text-gray-400"
+                className="w-full bg-white border border-[var(--border)] rounded-full pl-11 pr-4 py-2.5 text-[13px] outline-none focus:border-[var(--sienna)] focus:ring-4 focus:ring-[var(--sienna)]/10 transition-all shadow-sm placeholder:text-gray-400"
               />
             </div>
             
@@ -164,7 +163,7 @@ const MainApp: React.FC = () => {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-6 ml-auto">
+            <div className="flex items-center gap-3 ml-auto">
               
               {/* Notifications Dropdown */}
               <div className="relative" ref={notificationsRef}>
@@ -216,6 +215,16 @@ const MainApp: React.FC = () => {
                 )}
               </div>
 
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-full transition-all active:scale-95 ${theme === 'dark' ? 'text-white/80 bg-white/10 hover:bg-white/20' : 'text-gray-700 bg-white/90 hover:bg-gray-100'}`}
+                title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+                aria-label={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              >
+                {theme === 'light' && <Sun className="w-[22px] h-[22px] text-amber-500" />}
+                {theme === 'dark' && <Moon className="w-[22px] h-[22px] text-indigo-400" />}
+              </button>
 
               <span className="hidden sm:block text-[15px] tracking-tight" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>
                 The Find Thrift Shop

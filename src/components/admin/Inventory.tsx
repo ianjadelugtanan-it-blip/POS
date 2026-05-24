@@ -158,7 +158,29 @@ export const Inventory: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Category</label>
-              <input type="text" value={category} onChange={e=>setCategory(e.target.value)} required className="input-field" placeholder="Components" />
+              <input 
+                type="text" 
+                list="category-suggestions"
+                value={category} 
+                onChange={e => {
+                  const val = e.target.value;
+                  // Auto-capitalize first letter to prevent "men" vs "Men" conflicts
+                  setCategory(val ? val.charAt(0).toUpperCase() + val.slice(1) : '');
+                }} 
+                required 
+                className="input-field" 
+                placeholder="Men, Women, Accessories..." 
+                autoComplete="off"
+              />
+              <datalist id="category-suggestions">
+                <option value="Men" />
+                <option value="Women" />
+                <option value="Unisex" />
+                {Array.from(new Set(products.map(p => p.category)))
+                  .filter(c => !['Men', 'Women', 'Unisex'].includes(c) && c.toLowerCase() !== 'mens wear')
+                  .map(c => <option key={c} value={c} />)
+                }
+              </datalist>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Price (₱)</label>
@@ -170,16 +192,33 @@ export const Inventory: React.FC = () => {
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5"><ImagePlus className="w-3.5 h-3.5"/> Product Image (Optional)</label>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageUpload} 
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-gray-200 rounded-xl" 
-              />
+              <div className="flex items-center gap-4">
+                <label className="btn-secondary cursor-pointer m-0">
+                  {imageUrl ? "Change Image" : "Choose Image"}
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="hidden" 
+                  />
+                </label>
+                <button 
+                  type="button" 
+                  onClick={() => setImageUrl('')}
+                  className="btn-secondary m-0 transition-colors"
+                  style={!imageUrl ? { backgroundColor: 'var(--sienna)', color: '#fff', borderColor: 'var(--sienna)' } : { opacity: 0.8 }}
+                >
+                  {imageUrl ? "Remove Image" : "No Image Selected"}
+                </button>
+              </div>
               {imageUrl && (
-                <div className="mt-3 flex items-center gap-3">
-                  <img src={imageUrl} alt="preview" className="w-12 h-12 object-cover rounded-md border border-gray-200 shadow-sm" />
-                  <span className="text-xs font-semibold text-green-700 bg-green-50 px-3 py-1.5 rounded-full">Visual Successfully Attached</span>
+                <div className="mt-3 flex flex-col gap-2">
+                  <div className="relative w-max">
+                    <img src={imageUrl} alt="preview" className="w-24 h-24 object-cover rounded-xl border-2 border-blue-200 shadow-md" />
+                    <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 shadow-sm">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

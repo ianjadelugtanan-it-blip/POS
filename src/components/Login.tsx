@@ -289,10 +289,6 @@ export const Login: React.FC = () => {
 
            <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Full Name</label>
-                <input type="text" required value={name} onChange={(e)=>setName(e.target.value)} className="input-field" placeholder="Jane Doe" />
-              </div>
-              <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Username</label>
                 <input type="text" required value={username} onChange={(e)=>setUsername(e.target.value)} className="input-field" placeholder="Phone number / Username / Email" />
               </div>

@@ -199,13 +199,27 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderComplet
                           </p>
                           <div className="flex flex-col gap-2">
                              <label className="text-xs font-bold text-blue-600 uppercase">Upload Receipt Screenshot</label>
-                             <input 
-                                type="file" 
-                                accept="image/*" 
-                                onChange={handleImageUpload}
-                                className="block w-full text-sm text-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all"
-                                required={paymentMethod === 'GCash'}
-                             />
+                             <div className="flex items-center gap-3 mt-1">
+                               <label className="cursor-pointer py-2 px-4 rounded-full text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-sm">
+                                 {receiptImage ? "Change File" : "Choose File"}
+                                 <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    required={paymentMethod === 'GCash' && !receiptImage}
+                                 />
+                               </label>
+                               {receiptImage && (
+                                 <button 
+                                   type="button"
+                                   onClick={() => setReceiptImage(null)}
+                                   className="py-2 px-4 rounded-full text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors border border-gray-200"
+                                 >
+                                   Remove File
+                                 </button>
+                               )}
+                             </div>
                           </div>
                        </div>
                     </div>

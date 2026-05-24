@@ -21,11 +21,11 @@ try {
 
     $result = [];
     foreach ($orders as $order) {
-        // 2. Fetch items for each order
+        // 2. Fetch items for each order (LEFT JOIN so order still loads if a product was deleted)
         $itemStmt = $pdo->prepare("
-            SELECT oi.*, p.name 
+            SELECT oi.*, p.name, p.image_url AS imageUrl
             FROM order_items oi
-            JOIN products p ON oi.product_id = p.id
+            LEFT JOIN products p ON oi.product_id = p.id
             WHERE oi.order_id = ?
         ");
         $itemStmt->execute([$order['id']]);
@@ -49,9 +49,10 @@ try {
             'items' => array_map(function($i) {
                 return [
                     'id' => $i['product_id'],
-                    'name' => $i['name'],
+                    'name' => $i['name'] ?? 'Deleted Product',
                     'price' => (float)$i['price_at_time'],
-                    'quantity' => (int)$i['quantity']
+                    'quantity' => (int)$i['quantity'],
+                    'imageUrl' => $i['imageUrl'] ?? null
                 ];
             }, $items)
         ];

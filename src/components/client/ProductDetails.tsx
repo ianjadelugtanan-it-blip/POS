@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Minus, Plus, ShoppingBag, Heart, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingBag, ShieldCheck, Truck } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { ProductCard } from '../ProductCard';
@@ -14,7 +14,6 @@ interface ProductDetailsProps {
 export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack, onAddToCart, onSelectProduct }) => {
   const { products } = useAppContext();
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const isOutOfStock = product.stock === 0;
   
   const recommendations = useMemo(() => {
@@ -67,12 +66,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
               </div>
             )}
             
-            <button 
-              onClick={() => setIsFavorite(!isFavorite)}
-              className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md shadow-sm transition-all duration-200 ${isFavorite ? 'bg-white text-red-500' : 'bg-white/80 text-gray-600 hover:bg-white'}`}
-            >
-              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
-            </button>
+
           </div>
         </div>
 

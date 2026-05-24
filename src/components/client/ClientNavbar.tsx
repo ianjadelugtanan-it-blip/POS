@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu } from 'lucide-react';
+import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ClientNavbarProps {
   activeTab: string;
@@ -9,7 +10,8 @@ interface ClientNavbarProps {
 }
 
 export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActiveTab }) => {
-  const { user, logout, clientCart } = useAppContext();
+  const { user, logout, clientCart, isLoggingOut } = useAppContext();
+  const { theme, toggleTheme } = useTheme(user !== null, isLoggingOut);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const cartCount = clientCart.reduce((sum, item) => sum + item.quantity, 0);
@@ -19,9 +21,25 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
     { id: 'my-orders', label: 'My Orders', icon: ClipboardList },
   ];
 
+  // Cart button classes and active style should depend on theme
+  const cartButtonClass = `p-2.5 rounded-full transition-all relative ${
+    activeTab === 'cart'
+      ? 'shadow-lg'
+      : theme === 'dark'
+      ? 'bg-white/10 text-white/80 hover:bg-white/20'
+      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+  }`;
+
+  const cartActiveStyle: React.CSSProperties | undefined =
+    activeTab === 'cart'
+      ? theme === 'dark'
+        ? { backgroundColor: 'var(--nav-active-color)', color: '#ffffff' }
+        : { backgroundColor: 'var(--sienna)', color: '#ffffff' }
+      : undefined;
+
   return (
     <>
-      <nav className="sticky top-0 z-[100] w-full border-b border-white/10 shadow-sm" style={{ background: 'linear-gradient(90deg, var(--brown) 0%, #9C5D22 100%)' }}>
+      <nav className="sticky top-0 z-[100] w-full border-b border-white/10 shadow-sm backdrop-blur-md" style={{ background: 'var(--nav-bg)' }}>
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -53,10 +71,14 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
                 className={`text-sm font-bold uppercase tracking-widest transition-all relative py-2 flex items-center gap-2 ${
                   activeTab === item.id ? 'text-white' : 'text-white/60 hover:text-white'
                 }`}
+                style={activeTab === item.id ? { color: 'var(--nav-active-color)' } : {}}
               >
                 {item.label}
                 {activeTab === item.id && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white animate-in fade-in slide-in-from-left-1" />
+                  <span
+                    className="absolute bottom-0 left-0 w-full h-0.5 animate-in fade-in slide-in-from-left-1"
+                    style={{ backgroundColor: 'var(--nav-active-color)' }}
+                  />
                 )}
               </button>
             ))}
@@ -71,11 +93,21 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
                 <span className="text-xs font-bold text-white truncate max-w-[80px]">{user?.username}</span>
               </div>
 
-              <button 
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`p-2.5 rounded-full transition-all animate-fade-in active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-white/80 hover:bg-white/20' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+                aria-label={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              >
+                {theme === 'light' && <Sun className="w-5 h-5 text-amber-500" />}
+                {theme === 'dark' && <Moon className="w-5 h-5 text-indigo-400" />}
+              </button>
+
+              <button
                 onClick={() => setActiveTab('cart')}
-                className={`p-2.5 rounded-full transition-all relative ${
-                  activeTab === 'cart' ? 'bg-white/20 text-white shadow-lg' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
+                className={cartButtonClass}
+                style={cartActiveStyle}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cartCount > 0 && (

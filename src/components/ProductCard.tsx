@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Info, Heart } from 'lucide-react';
+import React from 'react';
+import { Info } from 'lucide-react';
 import type { Product } from '../types';
 
 interface ProductCardProps {
@@ -11,9 +11,6 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'shop', onAddToCart, onClick }) => {
   const isOutOfStock = product.stock === 0;
-  const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-
 
   const handlePosQuickAdd = () => {
     if (!isOutOfStock && onAddToCart) {
@@ -21,17 +18,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
     }
   };
 
-  const toggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-  };
-
   if (variant === 'shop') {
     return (
       <div 
         onClick={onClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className="group cursor-pointer flex flex-col h-full bg-white transition-all duration-300 relative"
       >
         {/* Image container */}
@@ -52,13 +42,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'sh
             </div>
           )}
           
-          <button 
-            onClick={toggleFavorite}
-            className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-md shadow-sm transition-all duration-200 ${isFavorite ? 'bg-white text-red-500' : 'bg-white/70 text-gray-600 hover:bg-white'} ${isHovered || isFavorite ? 'opacity-100' : 'opacity-0'}`}
-            aria-label="Favorite"
-          >
-            <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
-          </button>
+
 
           {isOutOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">

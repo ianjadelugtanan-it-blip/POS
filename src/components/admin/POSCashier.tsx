@@ -237,7 +237,34 @@ export const POSCashier: React.FC = () => {
                       Close
                     </button>
                     <button 
-                      onClick={() => window.print()}
+                      onClick={() => {
+                        const printWindow = window.open('', '_blank', 'width=400,height=600');
+                        if (!printWindow) return;
+                        const itemRows = lastTransaction.items.map((item: any) =>
+                          `<div class="row"><span>${item.quantity}x ${item.name}</span><span>₱${(item.price * item.quantity).toFixed(2)}</span></div>`
+                        ).join('');
+                        printWindow.document.write(`
+                          <html><head><title>Receipt ${lastTransaction.id}</title>
+                          <style>
+                            body{font-family:monospace;font-size:13px;padding:24px;color:#333;}
+                            .row{display:flex;justify-content:space-between;margin:6px 0;}
+                            .divider{border-top:1px dashed #ccc;margin:10px 0;}
+                            .bold{font-weight:bold;font-size:14px;}
+                            .center{text-align:center;color:#888;margin-top:16px;font-size:11px;}
+                          </style></head><body>
+                          <div class="row bold"><span>THE FIND — RECEIPT</span><span>${lastTransaction.id}</span></div>
+                          <div class="divider"></div>
+                          ${itemRows}
+                          <div class="divider"></div>
+                          <div class="row bold"><span>TOTAL</span><span>₱${lastTransaction.total.toFixed(2)}</span></div>
+                          <div class="center"><p>${new Date().toLocaleString()}</p><p>Thank you for shopping at The Find!</p></div>
+                          </body></html>
+                        `);
+                        printWindow.document.close();
+                        printWindow.focus();
+                        printWindow.print();
+                        printWindow.close();
+                      }}
                       className="py-3.5 rounded-xl bg-black text-white font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-black/20"
                     >
                       Print Receipt

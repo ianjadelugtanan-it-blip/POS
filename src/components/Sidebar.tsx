@@ -39,11 +39,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ background: 'linear-gradient(135deg, var(--brown) 0%, #9C5D22 100%)', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+        className={`fixed inset-y-0 left-0 z-50 w-[260px] flex flex-col transform transition-transform duration-300 md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-[4px_0_24px_rgba(0,0,0,0.05)]`}
+        style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid rgba(255,255,255,0.1)' }}
       >
         {/* Brand */}
-        <div className="px-8 pt-10 pb-12 flex items-center justify-between">
+        <div className="px-8 pt-10 pb-10 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold leading-tight tracking-tight mb-1 text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
               The Find
@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
         </div>
 
         {/* Nav Items */}
-        <div className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
           {navItems.map(({ id, label, icon: Icon }, index) => {
             const isActive = activeTab === id;
             return (
@@ -69,16 +69,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
                 key={id}
                 id={`${id}-tab`}
                 onClick={() => handleTabSelect(id)}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-lg text-[13px] font-semibold transition-all duration-300 group animate-cascade ${isActive ? 'bg-white/20 shadow-sm' : 'hover:bg-white/10'}`}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-[13px] font-semibold transition-all duration-300 group animate-cascade ${
+                  isActive 
+                    ? 'bg-[var(--sidebar-active-bg)] border border-[var(--sidebar-active-border)] shadow-sm' 
+                    : 'hover:bg-white/10 border border-transparent'
+                }`}
                 style={{
                   animationDelay: `${index * 40}ms`,
-                  color: isActive ? '#fff' : 'var(--parchment)'
+                  color: isActive ? 'var(--sidebar-text-active)' : 'var(--sidebar-inactive-text)'
                 }}
               >
-                <Icon className={`w-4.5 h-4.5 flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-white/60 group-hover:text-white'}`} style={{ width: 18, height: 18 }} />
+                <Icon className={`w-4.5 h-4.5 flex-shrink-0 transition-all ${isActive ? 'text-[var(--sidebar-text-active)] scale-110' : 'text-white/60 group-hover:text-white'}`} style={{ width: 18, height: 18 }} />
                 <span className={!isActive ? "opacity-80 group-hover:opacity-100 transition-opacity" : ""}>{label}</span>
                 {isActive && (
-                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--sidebar-text-active)] shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                 )}
               </button>
             );
@@ -87,26 +91,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
 
         {/* User Footer */}
         {user && (
-          <div className="px-8 py-8 mt-auto border-t border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative bg-white/20 border border-white/30 text-white">
-                <span className="text-[13px] font-bold uppercase">{user.username.charAt(0)}</span>
+          <div className="p-5 mt-auto">
+            <div className="bg-white/15 rounded-2xl p-4 border border-white/20 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 relative bg-white/30 border border-white/30 text-white shadow-inner">
+                  <span className="text-[13px] font-bold uppercase">{user.username.charAt(0)}</span>
+                </div>
+                <div className="flex flex-col text-left min-w-0">
+                  <span className="text-[13px] font-bold truncate tracking-tight text-white">{user.username}</span>
+                  <span className="text-[9px] font-medium tracking-[0.1em] mt-0.5 text-white/80">
+                    {user.role === 'admin' ? 'Store Manager' : 'Shopper'}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col text-left min-w-0">
-                <span className="text-[13px] font-bold truncate tracking-tight text-white">{user.username}</span>
-                <span className="text-[8px] font-bold uppercase tracking-[0.15em] mt-0.5 text-[var(--parchment)] opacity-70">
-                  {user.role === 'admin' ? 'Store Manager' : 'Shopper'}
-                </span>
-              </div>
+              <button
+                onClick={() => setShowSignOutModal(true)}
+                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold uppercase tracking-wider text-[var(--brown)] bg-white/80 hover:bg-white transition-all border border-transparent rounded-xl shadow-sm"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4 text-[var(--brown)]" />
+                Sign Out
+              </button>
             </div>
-            <button
-              onClick={() => setShowSignOutModal(true)}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2 text-[12px] font-bold uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
           </div>
         )}
       </div>
