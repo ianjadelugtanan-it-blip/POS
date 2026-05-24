@@ -45,17 +45,19 @@ export const MyOrders: React.FC = () => {
         const errorText = await response.text();
         try {
           const res = JSON.parse(errorText);
-          alert(res.error || "Failed to cancel order.");
+          setErrorMsg(res.error || "Failed to cancel order.");
         } catch {
           console.error("Server Error:", errorText);
-          alert("Server Error: " + errorText.substring(0, 100));
+          setErrorMsg("Server Error: " + errorText.substring(0, 100));
         }
       }
     } catch (err) {
       console.error("Connection Error:", err);
-      alert("Error connecting to server. Please check your internet or if the server is running.");
+      setErrorMsg("Error connecting to server. Please check your internet or if the server is running.");
     }
   };
+
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
@@ -69,6 +71,11 @@ export const MyOrders: React.FC = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
+      {errorMsg && (
+        <div className="mb-4 px-4">
+          <div className="w-full px-4 py-3 rounded-xl border bg-red-50 border-red-100 text-red-700">{errorMsg}</div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">My Orders</h2>

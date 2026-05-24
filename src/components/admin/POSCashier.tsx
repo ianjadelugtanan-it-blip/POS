@@ -9,6 +9,7 @@ export const POSCashier: React.FC = () => {
   const { products, setProducts, posCart, setPosCart, setOrders } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [lastTransaction, setLastTransaction] = useState<any | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const cartTotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -71,11 +72,11 @@ export const POSCashier: React.FC = () => {
         setPosCart([]);
         setLastTransaction(orderData);
       } else {
-        const result = await response.json();
-        alert(result.error || "Transaction failed.");
-      }
-    } catch {
-      alert("Connection error. Sale not recorded.");
+          const result = await response.json();
+          setErrorMsg(result.error || "Transaction failed.");
+        }
+      } catch {
+        setErrorMsg("Connection error. Sale not recorded.");
     }
   };
 
@@ -85,6 +86,15 @@ export const POSCashier: React.FC = () => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto">
       
       {/* Products Selection Area */}
+      {errorMsg && (
+        <div className="max-w-7xl mx-auto px-4 md:px-8 mb-4">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="px-4 py-2">
+              <div className="w-full px-4 py-3 rounded-xl border bg-red-50 border-red-100 text-red-700">{errorMsg}</div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex-[2] flex flex-col h-full bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 overflow-hidden">
         <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Terminal</h2>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu, Sun, Moon } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../hooks/useTheme';
+import { HelpModal } from '../ui/HelpModal';
 
 interface ClientNavbarProps {
   activeTab: string;
@@ -13,6 +14,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
   const { user, logout, clientCart, isLoggingOut } = useAppContext();
   const { theme, toggleTheme } = useTheme(user !== null, isLoggingOut);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const cartCount = clientCart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -105,6 +107,15 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
               </button>
 
               <button
+                onClick={() => setShowHelp(true)}
+                className="p-2.5 rounded-full transition-all bg-white/5 text-white/80 hover:bg-white/10"
+                title="Help / Quick Start"
+                aria-label="Help / Quick Start"
+              >
+                ?
+              </button>
+
+              <button
                 onClick={() => setActiveTab('cart')}
                 className={cartButtonClass}
                 style={cartActiveStyle}
@@ -158,6 +169,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
           </div>
         </div>
       )}
+      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
     </>
   );
 };

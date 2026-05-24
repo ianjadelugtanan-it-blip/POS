@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { AlertBanner } from '../ui/AlertBanner';
 import { API_BASE_URL } from '../../config';
 import { SkeletonUserCard } from '../ui/Skeleton';
 
@@ -12,6 +13,7 @@ export const AdminUsersManagement: React.FC = () => {
   const [userToRemove, setUserToRemove] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [removedUser, setRemovedUser] = useState<any | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -81,9 +83,13 @@ export const AdminUsersManagement: React.FC = () => {
       const result = await response.json();
 
       if (response.ok) {
-        setUsers(users.filter(u => u.username !== userToRemove));
-        setUserToRemove(null);
-        setSuccess("Access revoked successfully!");
+          const removed = users.find(u => u.username === userToRemove) || null;
+          setUsers(users.filter(u => u.username !== userToRemove));
+          setUserToRemove(null);
+          setRemovedUser(removed);
+          setSuccess("Access revoked successfully!");
+          // auto-clear the removedUser after 10s
+          setTimeout(() => setRemovedUser(null), 10000);
       } else {
         setError(result.error || "Failed to remove user.");
         setUserToRemove(null);
@@ -91,6 +97,30 @@ export const AdminUsersManagement: React.FC = () => {
     } catch {
       setError("Connection error while revoking user.");
       setUserToRemove(null);
+    }
+  };
+
+  const handleUndoRemove = async () => {
+    if (!removedUser) return;
+    try {
+      // Try to recreate the user with a random password for demo recovery
+      const pw = Math.random().toString(36).slice(2, 10);
+      const response = await fetch(`${API_BASE_URL}/auth/register.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: removedUser.username, role: removedUser.role, password: pw })
+      });
+      if (response.ok) {
+        const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
+        if (userRes.ok) setUsers(await userRes.json());
+        setSuccess('User restoration attempted. Please inform the restored user to reset their password.');
+        setRemovedUser(null);
+      } else {
+        const r = await response.json();
+        setError(r.error || 'Could not restore user.');
+      }
+    } catch {
+      setError('Connection error while attempting restore.');
     }
   };
 
@@ -167,6 +197,17 @@ export const AdminUsersManagement: React.FC = () => {
 
         {/* User List */}
         <div className="lg:col-span-8 self-start space-y-4">
+            {removedUser && (
+              <div className="mb-2">
+                <AlertBanner
+                  type="info"
+                  message={`Access revoked: ${removedUser.username}`}
+                  actionLabel="Undo"
+                  onAction={handleUndoRemove}
+                  onClose={() => setRemovedUser(null)}
+                />
+              </div>
+            )}
           {isLoadingUsers ? (
             <div className="space-y-4">
               {[1, 2, 3, 4].map((i) => (

@@ -65,7 +65,7 @@ export const OrderManagement: React.FC = () => {
         setOrderToDelete(null);
       }
     } catch {
-      alert("Error deleting order.");
+      setGlobalError("Error deleting order.");
     }
   };
 
@@ -87,7 +87,7 @@ export const OrderManagement: React.FC = () => {
           setActiveOrderForETA(null);
         }
       } catch {
-        alert("Error updating order.");
+        setGlobalError("Error updating order.");
       }
     }
   };
@@ -103,7 +103,7 @@ export const OrderManagement: React.FC = () => {
         setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
       }
     } catch {
-      alert("Error updating status.");
+      setGlobalError("Error updating status.");
     }
   };
 
@@ -126,11 +126,14 @@ export const OrderManagement: React.FC = () => {
         setDeclineReason('');
       }
     } catch {
-      alert("Error declining order.");
+      setGlobalError("Error declining order.");
     } finally {
       setIsSubmittingDecline(false);
     }
   };
+
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
 
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.ComponentType<{ className?: string }> }> = {
@@ -144,6 +147,11 @@ export const OrderManagement: React.FC = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
+      {globalError && (
+        <div className="mb-4 px-4">
+          <div className="w-full px-4 py-3 rounded-xl border bg-red-50 border-red-100 text-red-700">{globalError}</div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Order Management</h2>
