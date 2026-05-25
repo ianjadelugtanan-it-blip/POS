@@ -42,6 +42,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   const lowStockProducts = products.filter(p => p.stock < 5);
 
+  const activeOrders = orders.filter((o) => {
+    const status = String(o.status ?? '').trim().toLowerCase();
+    return status === 'pending' || status === 'processing';
+  });
+
   const categorySales: Record<string, number> = {};
   orders.filter(o => o.status === 'completed').forEach(o => {
     o.items.forEach(item => {
@@ -178,11 +183,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="p-6 flex items-center justify-between border-b border-[var(--border)]">
             <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Pending Orders</h3>
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--parchment)]" style={{ color: 'var(--charcoal)' }}>
-              {orders.filter(o => o.status !== 'completed').length}
+              {activeOrders.length}
             </span>
           </div>
           <div className="flex-1 flex flex-col divide-y divide-[var(--border)]">
-            {orders.filter(o => o.status !== 'completed').slice(0,3).map((order) => (
+            {activeOrders.slice(0,3).map((order) => (
               <div key={order.id} className="p-4 flex items-start gap-4 hover:bg-[var(--cream)] transition-colors cursor-pointer">
                 <div className="w-12 h-12 rounded bg-[var(--parchment)] overflow-hidden border border-[var(--border)] flex-shrink-0">
                   {order.items[0]?.imageUrl && <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />}
@@ -198,7 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </div>
               </div>
             ))}
-            {orders.filter(o => o.status !== 'completed').length === 0 && (
+            {activeOrders.length === 0 && (
               <div className="p-8 text-center text-[12px]" style={{ color: 'var(--text-light)' }}>
                 No pending orders!
               </div>
