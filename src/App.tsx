@@ -105,9 +105,8 @@ const MainApp: React.FC = () => {
   const lowStockProducts = products ? products.filter(p => p.stock < 5 && p.stock > 0) : [];
   const pendingOrders = orders ? orders.filter(o => o.status === 'pending' || o.status === 'processing') : [];
   
-  let totalNotifications = 0;
-  if (lowStockProducts.length > 0) totalNotifications += 1;
-  if (pendingOrders.length > 0) totalNotifications += 1;
+  let totalNotifications = lowStockProducts.length;
+if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
 
   if (!user) return <Login />;
 

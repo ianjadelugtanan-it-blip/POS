@@ -6,7 +6,7 @@ interface ProductCardProps {
   product: Product;
   variant?: 'shop' | 'pos';
   onAddToCart?: (product: Product, quantity: number) => void;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'shop', onAddToCart, onClick }) => {

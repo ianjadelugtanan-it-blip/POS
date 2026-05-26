@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowLeft, Minus, Plus, ShoppingBag, ShieldCheck, Truck } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
@@ -20,12 +20,21 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
     return products.filter(p => p.id !== product.id && p.stock > 0).slice(0, 4);
   }, [products, product.id]);
 
-  const handleIncrease = () => {
-    if (quantity < product.stock) setQuantity(prev => prev + 1);
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const addToBagRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    // Scroll product details into view when product changes
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [product.id]);
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(prev => prev - 1);
+  };
+
+  const handleIncrease = () => {
+    if (quantity < product.stock && !isOutOfStock) setQuantity(prev => prev + 1);
   };
 
   const handleAddToCart = () => {
@@ -36,7 +45,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto w-full relative pb-20">
+    <div ref={containerRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto w-full relative pb-20">
       
       {/* Breadcrumb / Back Navigation */}
       <button 
@@ -55,9 +64,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
         <div className="w-full lg:w-1/2 flex flex-col gap-4">
           <div className="w-full aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden relative border border-gray-100 shadow-sm">
             {product.imageUrl ? (
-              <img 
-                src={product.imageUrl} 
-                alt={product.name} 
+              <img
+                src={product.imageUrl}
+                alt={product.name}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -65,9 +74,8 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
                 <span className="text-gray-400 font-medium">No Image Available</span>
               </div>
             )}
-            
+          </div>  
 
-          </div>
         </div>
 
         {/* Right Column: Product Info */}
@@ -100,7 +108,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
           </div>
 
           {/* Action Area */}
-          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-8">
+          <div ref={addToBagRef} className="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-8">
              <div className="flex items-center justify-between mb-4">
                 <span className="font-semibold text-gray-900">Quantity</span>
                 <span className={`text-sm font-medium ${isOutOfStock ? 'text-red-500' : product.stock < 5 ? 'text-orange-500' : 'text-green-600'}`}>
@@ -179,9 +187,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
                 <ProductCard 
                   product={recProduct} 
                   onAddToCart={onAddToCart}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (onSelectProduct) onSelectProduct(recProduct);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                 />
               </div>
