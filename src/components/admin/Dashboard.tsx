@@ -183,19 +183,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="p-6 flex items-center justify-between border-b border-[var(--border)]">
             <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Pending Orders</h3>
             <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-[var(--parchment)]" style={{ color: 'var(--charcoal)' }}>
-<<<<<<< HEAD
-              {orders.filter(o => o.status === 'pending' || o.status === 'processing').length}
-            </span>
-          </div>
-          <div className="flex-1 flex flex-col divide-y divide-[var(--border)]">
-            {orders.filter(o => o.status === 'pending' || o.status === 'processing').slice(0,3).map((order) => (
-=======
               {activeOrders.length}
             </span>
           </div>
           <div className="flex-1 flex flex-col divide-y divide-[var(--border)]">
             {activeOrders.slice(0,3).map((order) => (
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
               <div key={order.id} className="p-4 flex items-start gap-4 hover:bg-[var(--cream)] transition-colors cursor-pointer">
                 <div className="w-12 h-12 rounded bg-[var(--parchment)] overflow-hidden border border-[var(--border)] flex-shrink-0">
                   {order.items[0]?.imageUrl && <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />}
@@ -211,11 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </div>
               </div>
             ))}
-<<<<<<< HEAD
-            {orders.filter(o => o.status === 'pending' || o.status === 'processing').length === 0 && (
-=======
             {activeOrders.length === 0 && (
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
               <div className="p-8 text-center text-[12px]" style={{ color: 'var(--text-light)' }}>
                 No pending orders!
               </div>

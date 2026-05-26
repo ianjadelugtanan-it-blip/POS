@@ -102,13 +102,8 @@ const MainApp: React.FC = () => {
     }
   }, [showWelcome, isFadingOut]);
 
-<<<<<<< HEAD
   const lowStockProducts = products ? products.filter(p => p.stock < 5 && p.stock > 0) : [];
   const pendingOrders = orders ? orders.filter(o => o.status === 'pending' || o.status === 'processing') : [];
-=======
-  const lowStockProducts = products ? products.filter(p => p.stock < 5) : [];
-  const pendingOrders = orders ? orders.filter(o => o.status === 'pending') : [];
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
   
   let totalNotifications = 0;
   if (lowStockProducts.length > 0) totalNotifications += 1;

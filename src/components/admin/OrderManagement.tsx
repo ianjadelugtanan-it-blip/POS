@@ -7,11 +7,7 @@ import { API_BASE_URL } from '../../config';
 import { SkeletonOrderCard } from '../ui/Skeleton';
 
 export const OrderManagement: React.FC = () => {
-<<<<<<< HEAD
   const { orders, setOrders, isLoadingOrders, setProducts } = useAppContext();
-=======
-  const { orders, setOrders, setProducts, isLoadingOrders } = useAppContext();
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -131,25 +127,18 @@ export const OrderManagement: React.FC = () => {
       if (response.ok) {
         setOrderToDecline(null);
         setDeclineReason('');
-<<<<<<< HEAD
         
-        // Refresh products to get updated stock
-        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
-        if (prodRes.ok) setProducts(await prodRes.json());
-=======
-
+        // Refresh orders and products to get updated data
         const [ordersRes, prodRes] = await Promise.all([
           fetch(`${API_BASE_URL}/orders/get.php`),
-          fetch(`${API_BASE_URL}/products/get.php`)
+          fetch(`${API_BASE_URL}/products/get.php`),
         ]);
-
         if (ordersRes.ok) {
           setOrders(await ordersRes.json());
         }
         if (prodRes.ok) {
           setProducts(await prodRes.json());
         }
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
       }
     } catch {
       setGlobalError("Error declining order.");
@@ -303,12 +292,8 @@ export const OrderManagement: React.FC = () => {
                          Complete
                        </button>
                      )}
-<<<<<<< HEAD
-                     {(order.status === 'completed' || order.status === 'declined' || order.status === 'cancelled') && (
-=======
 
                      {(order.status === 'pending' || order.status === 'processing' || order.status === 'declined') && (
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
                        <button 
                          onClick={() => setOrderToDelete(order.id)}
                          className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all"

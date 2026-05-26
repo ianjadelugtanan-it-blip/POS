@@ -10,11 +10,8 @@ export const MyOrders: React.FC = () => {
   const { orders, user, setOrders, setProducts, isLoadingOrders } = useAppContext();
   const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
   const [selectedReceipt, setSelectedReceipt] = React.useState<any | null>(null);
-<<<<<<< HEAD
-  const [orderToCancel, setOrderToCancel] = React.useState<string | null>(null);
-=======
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
   const [orderToDelete, setOrderToDelete] = React.useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   
   React.useEffect(() => {
     const refetchOrders = async () => {
@@ -36,10 +33,6 @@ export const MyOrders: React.FC = () => {
       // Heuristic 3: Escape key dismisses modal screens in client MyOrders
       if (e.key === 'Escape') {
         setSelectedReceipt(null);
-<<<<<<< HEAD
-        setOrderToCancel(null);
-=======
->>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
         setOrderToDelete(null);
       }
     };
@@ -82,34 +75,6 @@ export const MyOrders: React.FC = () => {
       setErrorMsg("Error connecting to server. Please check your internet or if the server is running.");
     }
   };
-
-  const handleDeleteOrder = async () => {
-    if (!orderToDelete) return;
-    try {
-      const response = await fetch(`${API_BASE_URL}/orders/delete.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: orderToDelete })
-      });
-      if (response.ok) {
-        setOrders(orders.filter(o => o.id !== orderToDelete));
-        setOrderToDelete(null);
-      } else {
-        const errorText = await response.text();
-        try {
-          const res = JSON.parse(errorText);
-          setErrorMsg(res.error || "Failed to delete order.");
-        } catch {
-          setErrorMsg("Server Error: " + errorText.substring(0, 100));
-        }
-      }
-    } catch (err) {
-      console.error("Connection Error:", err);
-      setErrorMsg("Error connecting to server.");
-    }
-  };
-
-  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
 
   const statusConfig: Record<OrderStatus, { text: string, bg: string, icon: React.FC<React.SVGProps<SVGSVGElement>> }> = {
@@ -345,36 +310,6 @@ export const MyOrders: React.FC = () => {
                    className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
                  >
                    No, Keep It
-                 </button>
-                 <button 
-                   onClick={handleDeleteOrder}
-                   className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
-                 >
-                   Yes, Delete
-                 </button>
-              </div>
-           </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {orderToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="p-8 pb-4 flex flex-col items-center">
-                 <div className="w-14 h-14 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
-                    <Trash2 className="w-7 h-7" />
-                 </div>
-                 <h3 className="text-xl font-bold text-gray-900">Delete order history?</h3>
-                 <p className="text-sm text-gray-500 text-center mt-2">Are you sure you want to delete this order from your history? This action cannot be undone.</p>
-              </div>
-              
-              <div className="p-8 flex gap-3">
-                 <button 
-                   onClick={() => setOrderToDelete(null)}
-                   className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
-                 >
-                   Cancel
                  </button>
                  <button 
                    onClick={handleDeleteOrder}

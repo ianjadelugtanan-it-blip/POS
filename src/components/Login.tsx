@@ -9,7 +9,7 @@ export const Login: React.FC = () => {
   const { setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   
-  const [name, setName] = useState('');
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -141,7 +141,7 @@ export const Login: React.FC = () => {
           setUsername('');
           setPassword('');
           setConfirmPassword('');
-          setName('');
+          
           
           setIsLogin(true);
           setError('');
@@ -254,7 +254,7 @@ export const Login: React.FC = () => {
                  setUsername('');
                  setPassword('');
                  setConfirmPassword('');
-                 setName('');
+                 
                }} className="text-sienna font-bold hover:underline">Create an account</button>
 
              </p>
@@ -344,7 +344,6 @@ export const Login: React.FC = () => {
                  setUsername('');
                  setPassword('');
                  setConfirmPassword('');
-                 setName('');
                }} className="text-sienna font-bold hover:underline">Sign in instead</button>
 
              </p>
