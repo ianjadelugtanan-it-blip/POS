@@ -10,7 +10,10 @@ export const MyOrders: React.FC = () => {
   const { orders, user, setOrders, setProducts, isLoadingOrders } = useAppContext();
   const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
   const [selectedReceipt, setSelectedReceipt] = React.useState<any | null>(null);
+<<<<<<< HEAD
   const [orderToCancel, setOrderToCancel] = React.useState<string | null>(null);
+=======
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
   const [orderToDelete, setOrderToDelete] = React.useState<string | null>(null);
   
   React.useEffect(() => {
@@ -33,7 +36,10 @@ export const MyOrders: React.FC = () => {
       // Heuristic 3: Escape key dismisses modal screens in client MyOrders
       if (e.key === 'Escape') {
         setSelectedReceipt(null);
+<<<<<<< HEAD
         setOrderToCancel(null);
+=======
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
         setOrderToDelete(null);
       }
     };
@@ -44,25 +50,28 @@ export const MyOrders: React.FC = () => {
   const myOrders = orders.filter(o => o.username === user?.username);
   const filteredOrders = filter === 'all' ? myOrders : myOrders.filter(o => o.status === filter);
 
-  const handleCancelOrder = async () => {
-    if (!orderToCancel) return;
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/orders/cancel.php`, {
+      const response = await fetch(`${API_BASE_URL}/orders/delete.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: orderToCancel })
+        body: JSON.stringify({ id: orderToDelete })
       });
       if (response.ok) {
-        setOrders(orders.filter(o => o.id !== orderToCancel));
-        setOrderToCancel(null);
-        // Refresh products to show restored stock
-        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        setOrders(orders.filter(o => o.id !== orderToDelete));
+        setOrderToDelete(null);
+        const [prodRes, orderRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/products/get.php`),
+          fetch(`${API_BASE_URL}/orders/get.php?username=${encodeURIComponent(user?.username ?? '')}`)
+        ]);
         if (prodRes.ok) setProducts(await prodRes.json());
+        if (orderRes.ok) setOrders(await orderRes.json());
       } else {
         const errorText = await response.text();
         try {
           const res = JSON.parse(errorText);
-          setErrorMsg(res.error || "Failed to cancel order.");
+          setErrorMsg(res.error || "Failed to delete order.");
         } catch {
           console.error("Server Error:", errorText);
           setErrorMsg("Server Error: " + errorText.substring(0, 100));
@@ -216,14 +225,14 @@ export const MyOrders: React.FC = () => {
                   )}
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       {order.status === 'pending' && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                       {(order.status === 'pending' || order.status === 'declined' || order.receiptImage) && (
                          <button 
-                           onClick={() => setOrderToCancel(order.id)}
+                           onClick={() => setOrderToDelete(order.id)}
                            className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[11px] font-bold uppercase hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5"
                          >
                            <Trash2 className="w-3 h-3" />
-                           Cancel
+                           Delete
                          </button>
                        )}
                        {(order.status === 'declined' || order.status === 'cancelled') && (
@@ -318,30 +327,30 @@ export const MyOrders: React.FC = () => {
            </div>
         </div>
       )}
-      {/* Cancellation Confirmation Modal */}
-      {orderToCancel && (
+      {/* Deletion Confirmation Modal */}
+      {orderToDelete && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-8 pb-4 flex flex-col items-center">
                  <div className="w-14 h-14 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
                     <Trash2 className="w-7 h-7" />
                  </div>
-                 <h3 className="text-xl font-bold text-gray-900">Cancel this order?</h3>
+                 <h3 className="text-xl font-bold text-gray-900">Delete this order?</h3>
                  <p className="text-sm text-gray-500 text-center mt-2">This action will remove your order and restore the items to our inventory. This cannot be undone.</p>
               </div>
               
               <div className="p-8 flex gap-3">
                  <button 
-                   onClick={() => setOrderToCancel(null)}
+                   onClick={() => setOrderToDelete(null)}
                    className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
                  >
                    No, Keep It
                  </button>
                  <button 
-                   onClick={handleCancelOrder}
+                   onClick={handleDeleteOrder}
                    className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
                  >
-                   Yes, Cancel
+                   Yes, Delete
                  </button>
               </div>
            </div>

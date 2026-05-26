@@ -10,7 +10,7 @@ $json_data = file_get_contents('php://input');
 $data = json_decode($json_data, true);
 
 $id = $data['id'] ?? '';
-$status = $data['status'] ?? null;
+$status = isset($data['status']) ? trim(strtolower($data['status'])) : null;
 $eta = $data['estimatedArrival'] ?? null;
 $declineReason = $data['declineReason'] ?? null;
 
@@ -24,18 +24,42 @@ if (empty($id)) {
 try {
     $pdo->beginTransaction();
 
+<<<<<<< HEAD
     // 1. Fetch current status of the order
     $statusStmt = $pdo->prepare("SELECT status FROM orders WHERE id = ? FOR UPDATE");
+=======
+    $statusStmt = $pdo->prepare("SELECT status FROM orders WHERE id = ?");
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
     $statusStmt->execute([$id]);
     $currentOrder = $statusStmt->fetch();
 
     if (!$currentOrder) {
+<<<<<<< HEAD
         throw new Exception("Order not found.");
     }
 
     $currentStatus = $currentOrder['status'];
 
     // 2. Perform the update
+=======
+        http_response_code(404);
+        echo json_encode(['error' => 'Order not found.']);
+        exit;
+    }
+
+    $currentStatus = trim(strtolower($currentOrder['status']));
+    if ($status === 'declined' && in_array($currentStatus, ['pending', 'processing'], true)) {
+        $itemStmt = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+        $itemStmt->execute([$id]);
+        $items = $itemStmt->fetchAll();
+
+        foreach ($items as $item) {
+            $restoreStmt = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+            $restoreStmt->execute([$item['quantity'], $item['product_id']]);
+        }
+    }
+
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
     $sql = "UPDATE orders SET ";
     $params = [];
     $updates = [];
@@ -53,11 +77,18 @@ try {
         $params[] = $declineReason;
     }
 
+<<<<<<< HEAD
     if (!empty($updates)) {
         $sql .= implode(', ', $updates) . " WHERE id = ?";
         $params[] = $id;
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
+=======
+    if (empty($updates)) {
+        $pdo->commit();
+        echo json_encode(['message' => 'No changes made.']);
+        exit;
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
     }
 
     // 3. If transitioning to declined (or cancelled) from pending/processing, restore product stock
@@ -76,7 +107,11 @@ try {
 
     $pdo->commit();
     echo json_encode(['message' => 'Order updated successfully.']);
+<<<<<<< HEAD
 } catch (\Exception $e) {
+=======
+} catch (\PDOException $e) {
+>>>>>>> 50e551402bc1863b5a955ed46bd9009b91e26735
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
