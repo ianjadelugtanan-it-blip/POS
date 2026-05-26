@@ -7,7 +7,7 @@ import { API_BASE_URL } from '../../config';
 import { SkeletonOrderCard } from '../ui/Skeleton';
 
 export const OrderManagement: React.FC = () => {
-  const { orders, setOrders, isLoadingOrders } = useAppContext();
+  const { orders, setOrders, isLoadingOrders, setProducts } = useAppContext();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -101,6 +101,10 @@ export const OrderManagement: React.FC = () => {
       });
       if (response.ok) {
         setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+        if (newStatus === 'declined' || newStatus === 'cancelled') {
+          const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+          if (prodRes.ok) setProducts(await prodRes.json());
+        }
       }
     } catch {
       setGlobalError("Error updating status.");
@@ -124,6 +128,10 @@ export const OrderManagement: React.FC = () => {
         setOrders(orders.map(o => o.id === orderToDecline ? { ...o, status: 'declined', declineReason: declineReason.trim() } : o));
         setOrderToDecline(null);
         setDeclineReason('');
+        
+        // Refresh products to get updated stock
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
       }
     } catch {
       setGlobalError("Error declining order.");
@@ -173,7 +181,7 @@ export const OrderManagement: React.FC = () => {
              />
            </div>
            <div className="px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm text-sm font-medium whitespace-nowrap">
-             {orders.filter(o => o.status !== 'completed').length} Active Orders
+             {orders.filter(o => o.status === 'pending' || o.status === 'processing').length} Active Orders
            </div>
         </div>
       </div>
@@ -277,7 +285,7 @@ export const OrderManagement: React.FC = () => {
                          Complete
                        </button>
                      )}
-                     {order.status === 'completed' && (
+                     {(order.status === 'completed' || order.status === 'declined' || order.status === 'cancelled') && (
                        <button 
                          onClick={() => setOrderToDelete(order.id)}
                          className="px-4 py-2 bg-white text-red-600 border border-red-100 rounded-lg text-sm font-medium hover:bg-red-50 hover:border-red-200 shadow-sm transition-all flex items-center gap-2"

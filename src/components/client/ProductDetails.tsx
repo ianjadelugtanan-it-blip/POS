@@ -17,7 +17,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
   const isOutOfStock = product.stock === 0;
   
   const recommendations = useMemo(() => {
-    return products.filter(p => p.id !== product.id).slice(0, 4);
+    return products.filter(p => p.id !== product.id && p.stock > 0).slice(0, 4);
   }, [products, product.id]);
 
   const handleIncrease = () => {

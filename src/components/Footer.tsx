@@ -1,7 +1,23 @@
 import React from 'react';
 import { Shirt, Heart, Leaf, ShieldCheck } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export const Footer: React.FC = () => {
+  const { user } = useAppContext();
+  const isAdmin = user?.role === 'admin';
+
+  if (isAdmin) {
+    return (
+      <footer className="w-full mt-10 border-t relative z-10" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--parchment)' }}>
+        <div className="max-w-[1500px] mx-auto px-5 py-6 md:px-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-5 text-xs font-semibold tracking-wide" style={{ color: 'var(--text-light)' }}>
+            <p>© 2026 The Find Thrift Shop. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="w-full mt-20 border-t relative z-10" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--parchment)' }}>
       <div className="max-w-[1500px] mx-auto px-5 py-16 md:px-10">

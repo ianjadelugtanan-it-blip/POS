@@ -80,7 +80,7 @@ export const POSCashier: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredProducts = products.filter(p => p.stock > 0 && p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto">
@@ -111,7 +111,7 @@ export const POSCashier: React.FC = () => {
         </div>
         
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
-           {products.length === 0 ? (
+           {products.filter(p => p.stock > 0).length === 0 ? (
              <div className="h-full flex flex-col items-center justify-center text-gray-400">
                 <Search className="w-12 h-12 mb-4 opacity-20" />
                 <p>No products loaded in system</p>

@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
             <h1 className="text-2xl font-bold leading-tight tracking-tight mb-1 text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
               The Find
             </h1>
-            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--parchment)] opacity-80">
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/70">
               Retail Management
             </p>
           </div>

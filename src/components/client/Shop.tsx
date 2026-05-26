@@ -4,23 +4,39 @@ import { ProductDetails } from './ProductDetails';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { ShoppingBag, Tag } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 import { SkeletonProductCard } from '../ui/Skeleton';
 
+
 export const Shop: React.FC = () => {
-  const { products, setClientCart, isLoadingProducts } = useAppContext();
+  const { products, setProducts, setClientCart, isLoadingProducts } = useAppContext();
+  
+  useEffect(() => {
+    const refetchProducts = async () => {
+      try {
+        const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
+        if (prodRes.ok) setProducts(await prodRes.json());
+      } catch (err) {
+        console.error("Failed to refetch products:", err);
+      }
+    };
+    refetchProducts();
+  }, [setProducts]);
   
   const [toastItem, setToastItem] = useState<{ id: number; name: string, status: string } | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   const categories = useMemo(() => {
-    return ['All', ...Array.from(new Set(products.map(p => p.category)))];
+    const activeProducts = products.filter(p => p.stock > 0);
+    return ['All', ...Array.from(new Set(activeProducts.map(p => p.category)))];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
+    const activeProducts = products.filter(p => p.stock > 0);
     return selectedCategory === 'All' 
-      ? products 
-      : products.filter(p => p.category === selectedCategory);
+      ? activeProducts 
+      : activeProducts.filter(p => p.category === selectedCategory);
   }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product, quantity: number) => {
@@ -49,7 +65,7 @@ export const Shop: React.FC = () => {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto w-full relative">
       
       {toastItem && (
-        <div key={toastItem.id} className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-12 fade-in duration-300">
+        <div key={toastItem.id} className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-top-12 fade-in duration-300">
           <div className="bg-gray-900 drop-shadow-2xl text-white px-6 py-4 rounded-full shadow-lg border border-gray-700 font-bold flex items-center gap-3">
              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${toastItem.status === 'removed' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
                <ShoppingBag className="w-4 h-4" />

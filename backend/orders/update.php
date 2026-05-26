@@ -22,6 +22,20 @@ if (empty($id)) {
 }
 
 try {
+    $pdo->beginTransaction();
+
+    // 1. Fetch current status of the order
+    $statusStmt = $pdo->prepare("SELECT status FROM orders WHERE id = ? FOR UPDATE");
+    $statusStmt->execute([$id]);
+    $currentOrder = $statusStmt->fetch();
+
+    if (!$currentOrder) {
+        throw new Exception("Order not found.");
+    }
+
+    $currentStatus = $currentOrder['status'];
+
+    // 2. Perform the update
     $sql = "UPDATE orders SET ";
     $params = [];
     $updates = [];
@@ -39,21 +53,34 @@ try {
         $params[] = $declineReason;
     }
 
-
-    if (empty($updates)) {
-        echo json_encode(['message' => 'No changes made.']);
-        exit;
+    if (!empty($updates)) {
+        $sql .= implode(', ', $updates) . " WHERE id = ?";
+        $params[] = $id;
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
     }
 
-    $sql .= implode(', ', $updates) . " WHERE id = ?";
-    $params[] = $id;
+    // 3. If transitioning to declined (or cancelled) from pending/processing, restore product stock
+    if (($status === 'declined' || $status === 'cancelled') && $currentStatus !== 'declined' && $currentStatus !== 'cancelled') {
+        // Fetch items associated with the order
+        $itemsStmt = $pdo->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+        $itemsStmt->execute([$id]);
+        $items = $itemsStmt->fetchAll();
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+        // Restore stock
+        $updateStockStmt = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+        foreach ($items as $item) {
+            $updateStockStmt->execute([$item['quantity'], $item['product_id']]);
+        }
+    }
 
+    $pdo->commit();
     echo json_encode(['message' => 'Order updated successfully.']);
-} catch (\PDOException $e) {
+} catch (\Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to update order.']);
+    echo json_encode(['error' => 'Failed to update order: ' . $e->getMessage()]);
 }
 ?>

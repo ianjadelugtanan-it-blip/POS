@@ -43,6 +43,7 @@ const MainApp: React.FC = () => {
   };
 
   const [isCheckout, setIsCheckout] = useState(false);
+  const [checkoutItemIds, setCheckoutItemIds] = useState<Set<string>>(new Set());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
@@ -101,8 +102,8 @@ const MainApp: React.FC = () => {
     }
   }, [showWelcome, isFadingOut]);
 
-  const lowStockProducts = products ? products.filter(p => p.stock < 5) : [];
-  const pendingOrders = orders ? orders.filter(o => o.status !== 'completed') : [];
+  const lowStockProducts = products ? products.filter(p => p.stock < 5 && p.stock > 0) : [];
+  const pendingOrders = orders ? orders.filter(o => o.status === 'pending' || o.status === 'processing') : [];
   
   let totalNotifications = 0;
   if (lowStockProducts.length > 0) totalNotifications += 1;
@@ -329,9 +330,16 @@ const MainApp: React.FC = () => {
                 {activeTab === 'shop' && <Shop />}
                 {activeTab === 'cart' && (
                   isCheckout ? (
-                    <Checkout onBackToCart={() => setIsCheckout(false)} onOrderComplete={handleCheckoutComplete} />
+                    <Checkout 
+                      selectedItemIds={checkoutItemIds}
+                      onBackToCart={() => setIsCheckout(false)} 
+                      onOrderComplete={handleCheckoutComplete} 
+                    />
                   ) : (
-                    <Cart onProceedToCheckout={() => setIsCheckout(true)} />
+                    <Cart onProceedToCheckout={(selectedIds) => {
+                      setCheckoutItemIds(selectedIds);
+                      setIsCheckout(true);
+                    }} />
                   )
                 )}
                 {activeTab === 'my-orders' && <MyOrders />}
