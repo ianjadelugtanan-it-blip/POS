@@ -53,8 +53,10 @@ export const Inventory: React.FC = () => {
     setCategory(product.category);
     setImageUrl(product.imageUrl || '');
     setShowForm(true);
-    // Scroll to form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to form after it renders
+    setTimeout(() => {
+      document.getElementById('inventory-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   const handleDelete = async (id: string) => {
@@ -147,7 +149,7 @@ export const Inventory: React.FC = () => {
       </div>
 
       {showForm && (
-        <div className="card p-6 mb-8 border-t-4 border-blue-500 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div id="inventory-form" className="card p-6 mb-8 border-t-4 border-blue-500 animate-in fade-in slide-in-from-top-4 duration-300 scroll-mt-24">
           <h3 className="font-bold text-lg mb-4 text-gray-900">
             {editingId ? `Update Product: ${editingId}` : 'Define New Object'}
           </h3>

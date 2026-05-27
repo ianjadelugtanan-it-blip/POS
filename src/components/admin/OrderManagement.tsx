@@ -48,9 +48,11 @@ export const OrderManagement: React.FC = () => {
 
 
   const filteredOrders = orders.filter(o => 
-    o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    o.address?.toLowerCase().includes(searchQuery.toLowerCase())
+    o.status !== 'cancelled' && (
+      o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.address?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
 
   const handleDeleteOrder = async (id: string) => {
@@ -250,8 +252,17 @@ export const OrderManagement: React.FC = () => {
                   <ul className="space-y-3">
                     {order.items.map(item => (
                       <li key={item.id} className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">{item.quantity}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-10 h-10 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex-shrink-0 shadow-sm flex items-center justify-center">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[8px] font-bold text-gray-400">NO IMG</span>
+                            )}
+                            <span className="absolute top-0 right-0 bg-gray-900 text-white text-[9px] font-bold w-4 h-4 rounded-bl-lg flex items-center justify-center">
+                              {item.quantity}
+                            </span>
+                          </div>
                           <span className="font-medium text-gray-700">{item.name}</span>
                         </div>
                         <span className="font-mono text-gray-900 font-medium">₱{(item.price * item.quantity).toFixed(2)}</span>

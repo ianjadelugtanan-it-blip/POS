@@ -104,8 +104,9 @@ const MainApp: React.FC = () => {
     }
   }, [showWelcome, isFadingOut]);
 
+  const outOfStockProducts = products ? products.filter(p => p.stock === 0) : [];
   const lowStockProducts = products ? products.filter(p => p.stock < 3 && p.stock > 0) : [];
-  const lowStockBadge = lowStockProducts.length > 0 ? 1 : 0;
+  const lowStockBadge = (lowStockProducts.length > 0 ? 1 : 0) + (outOfStockProducts.length > 0 ? 1 : 0);
   const pendingOrders = orders ? orders.filter(o => o.status === 'pending' || o.status === 'processing') : [];
   
   let totalNotifications = lowStockBadge;
@@ -211,6 +212,21 @@ const MainApp: React.FC = () => {
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--parchment)] text-[var(--brown)]">{totalNotifications} New</span>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
+                      {outOfStockProducts.length > 0 && (
+                        <div 
+                          className="p-4 border-b border-[var(--border)] hover:bg-red-50 cursor-pointer transition-colors"
+                          onClick={() => { setActiveTab('inventory'); setIsNotificationsOpen(false); }}
+                        >
+                          <p className="text-[12px] font-bold text-red-700 mb-1">⚠ Out of Stock</p>
+                          <p className="text-[11px] text-gray-500 leading-snug">{outOfStockProducts.length} item{outOfStockProducts.length > 1 ? 's are' : ' is'} completely out of stock and unavailable to customers.</p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {outOfStockProducts.slice(0, 3).map(p => (
+                              <span key={p.id} className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-full truncate max-w-[120px]">{p.name}</span>
+                            ))}
+                            {outOfStockProducts.length > 3 && <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] rounded-full">+{outOfStockProducts.length - 3} more</span>}
+                          </div>
+                        </div>
+                      )}
                       {lowStockProducts.length > 0 && (
                         <div 
                           className="p-4 border-b border-[var(--border)] hover:bg-[var(--warm-white)] cursor-pointer transition-colors"

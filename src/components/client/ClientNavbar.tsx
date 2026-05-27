@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu, Sun, Moon } from 'lucide-react';
+import { ShoppingCart, ClipboardList, Shirt, LogOut, Menu, Sun, Moon, HelpCircle } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../hooks/useTheme';
 import { HelpModal } from '../ui/HelpModal';
@@ -52,17 +52,28 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
           </button>
 
           {/* Logo Section */}
-          <div 
-            className="flex items-center gap-2.5 cursor-pointer group"
-            onClick={() => setActiveTab('shop')}
-          >
-            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-transform group-hover:scale-105">
-              <Shirt className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div 
+              className="flex items-center gap-2.5 cursor-pointer group"
+              onClick={() => setActiveTab('shop')}
+            >
+              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-transform group-hover:scale-105">
+                <Shirt className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tighter leading-none text-white" style={{ fontFamily: "'Playfair Display', serif" }}>THE FIND</span>
+                <span className="text-[9px] font-bold tracking-[0.3em] text-white/60 uppercase">Est. 2024</span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-black tracking-tighter leading-none text-white" style={{ fontFamily: "'Playfair Display', serif" }}>THE FIND</span>
-              <span className="text-[9px] font-bold tracking-[0.3em] text-white/60 uppercase">Est. 2024</span>
-            </div>
+            {/* Help Button */}
+            <button
+              onClick={() => setShowHelp(true)}
+              className="p-2 rounded-full transition-all bg-white/10 text-white/80 hover:bg-white/20 hover:text-white"
+              title="Help / FAQ"
+              aria-label="Help / FAQ"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -107,14 +118,7 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
                 {theme === 'dark' && <Moon className="w-5 h-5 text-indigo-400" />}
               </button>
 
-              <button
-                onClick={() => setShowHelp(true)}
-                className="p-2.5 rounded-full transition-all bg-white/5 text-white/80 hover:bg-white/10"
-                title="Help / Quick Start"
-                aria-label="Help / Quick Start"
-              >
-                ?
-              </button>
+
 
               {user ? (
                 <>

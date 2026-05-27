@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Package, Tag } from 'lucide-react';
+import { TrendingUp, Package, Tag, Shirt } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { SkeletonDashboard } from '../ui/Skeleton';
 
@@ -189,8 +189,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="flex-1 flex flex-col divide-y divide-[var(--border)]">
             {activeOrders.slice(0,3).map((order) => (
               <div key={order.id} className="p-4 flex items-start gap-4 hover:bg-[var(--cream)] transition-colors cursor-pointer">
-                <div className="w-12 h-12 rounded bg-[var(--parchment)] overflow-hidden border border-[var(--border)] flex-shrink-0">
-                  {order.items[0]?.imageUrl && <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />}
+                <div className="w-12 h-12 rounded bg-[var(--parchment)] overflow-hidden border border-[var(--border)] flex-shrink-0 flex items-center justify-center">
+                  {order.items[0]?.imageUrl ? (
+                    <img src={order.items[0].imageUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Shirt className="w-6 h-6 text-gray-300" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
                   <div className="flex justify-between items-start mb-0.5">

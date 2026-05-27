@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, RotateCw, CheckCircle, FileText, Trash2, X } from 'lucide-react';
+import { Clock, RotateCw, CheckCircle, FileText, Trash2, X, Inbox } from 'lucide-react';
 
 import { useAppContext } from '../../context/AppContext';
 import type { OrderStatus } from '../../types';
@@ -11,6 +11,7 @@ export const MyOrders: React.FC = () => {
   const [filter, setFilter] = React.useState<'all' | OrderStatus>('all');
   const [selectedReceipt, setSelectedReceipt] = React.useState<any | null>(null);
   const [orderToDelete, setOrderToDelete] = React.useState<string | null>(null);
+  const [orderToCancel, setOrderToCancel] = React.useState<string | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Fetch orders on mount / user change
@@ -35,6 +36,7 @@ export const MyOrders: React.FC = () => {
       if (e.key === 'Escape') {
         setSelectedReceipt(null);
         setOrderToDelete(null);
+        setOrderToCancel(null);
       }
     };
     window.addEventListener('keydown', handler);
@@ -42,7 +44,8 @@ export const MyOrders: React.FC = () => {
   }, []);
 
   const myOrders = orders.filter(o => o.username === user?.username);
-  const filteredOrders = filter === 'all' ? myOrders : myOrders.filter(o => o.status === filter);
+  const activeOrders = myOrders.filter(o => o.status !== 'cancelled');
+  const filteredOrders = filter === 'all' ? activeOrders : activeOrders.filter(o => o.status === filter);
 
   const handleDeleteOrder = async () => {
     if (!orderToDelete) return;
@@ -68,6 +71,33 @@ export const MyOrders: React.FC = () => {
     } catch (err) {
       console.error('Delete error:', err);
       setErrorMsg('Unable to delete order. Please try again later.');
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/update.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderToCancel, status: 'cancelled' })
+      });
+      if (response.ok) {
+        // Refresh orders & products
+        const [prodRes, orderRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/products/get.php`),
+          fetch(`${API_BASE_URL}/orders/get.php?username=${encodeURIComponent(user?.username ?? '')}`)
+        ]);
+        if (prodRes.ok) setProducts(await prodRes.json());
+        if (orderRes.ok) setOrders(await orderRes.json());
+        setOrderToCancel(null);
+      } else {
+        const errorText = await response.text();
+        setErrorMsg(errorText);
+      }
+    } catch (err) {
+      console.error('Cancel error:', err);
+      setErrorMsg('Unable to cancel order. Please try again later.');
     }
   };
 
@@ -108,11 +138,19 @@ export const MyOrders: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {isLoadingOrders ? (
-            [1, 2, 3, 4].map(i => <SkeletonOrderCard key={i} />)
-          ) : (
-            filteredOrders.map((order, index) => {
+        {isLoadingOrders ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map(i => <SkeletonOrderCard key={i} />)}
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center w-full py-12 text-gray-500">
+            <Inbox className="w-12 h-12 mb-4 text-gray-400" />
+            <p className="text-lg font-medium">No orders yet</p>
+            <p className="text-sm">Explore the store and place an order to see it here.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredOrders.map((order, index) => {
               const StatusIcon = statusConfig[order.status].icon;
               return (
                 <div key={order.id} className="card p-6 flex flex-col group border border-gray-100 hover:border-blue-200 transition-colors animate-cascade" style={{ animationDelay: `${index * 75}ms` }}>
@@ -123,7 +161,7 @@ export const MyOrders: React.FC = () => {
                         <Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase flex items-center gap-1.5 border shadow-sm ${statusConfig[order.status].bg} ${statusConfig[order.status].text}`}> 
+                    <div className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase flex items-center gap-1.5 border shadow-sm ${statusConfig[order.status].bg} ${statusConfig[order.status].text}`}>
                       <StatusIcon className={`w-3.5 h-3.5 ${order.status === 'processing' ? 'animate-spin' : ''}`} /> {order.status}
                     </div>
                   </div>
@@ -136,6 +174,22 @@ export const MyOrders: React.FC = () => {
                       <div className="px-3 py-1 bg-blue-50 border border-blue-100 rounded-lg text-[10px] font-bold text-blue-600 uppercase shadow-sm">Receipt Attached</div>
                     )}
                   </div>
+
+                  {order.estimatedArrival && (
+                    (() => {
+                      const today = new Date();
+                      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                      const isToday = order.estimatedArrival.startsWith(todayStr);
+                      const displayDate = new Date(order.estimatedArrival).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                      
+                      return (
+                        <div className={`flex items-start gap-2 text-sm p-3 rounded-lg mb-6 border font-medium animate-in fade-in ${isToday ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
+                          <Clock className={`w-4 h-4 mt-0.5 shrink-0 ${isToday ? 'text-green-500' : 'text-blue-400'}`} />
+                          <p className="leading-snug">{isToday ? 'Arriving Today' : `Estimated Arrival: ${displayDate}`}</p>
+                        </div>
+                      );
+                    })()
+                  )}
 
                   <div className="mb-6 flex-1">
                     <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Purchased Items</h4>
@@ -161,12 +215,17 @@ export const MyOrders: React.FC = () => {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {(order.status === 'pending' || order.status === 'declined' || order.receiptImage) && (
+                      {order.status === 'pending' && (
+                        <button onClick={() => setOrderToCancel(order.id)} className="px-3 py-1.5 bg-orange-50 text-orange-600 border border-orange-100 rounded-lg text-[11px] font-bold uppercase hover:bg-orange-600 hover:text-white transition-all flex items-center gap-1.5">
+                          <X className="w-3 h-3" /> Cancel
+                        </button>
+                      )}
+                      {(order.status === 'completed' || order.status === 'declined' || order.status === 'cancelled') && (
                         <button onClick={() => setOrderToDelete(order.id)} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[11px] font-bold uppercase hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5">
                           <Trash2 className="w-3 h-3" /> Delete
                         </button>
                       )}
-                      <button onClick={() => setSelectedReceipt(order)} className="px-3 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-[11px] font-bold uppercase hover:bg-black hover:text-white transition-all flex items-center gap-1.5">
+                      <button onClick={() => setSelectedReceipt(order)} className="px-3 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-[11px] font-bold uppercase hover-bg-black hover:text-white transition-all flex items-center gap-1.5">
                         <FileText className="w-3 h-3" /> Receipt
                       </button>
                     </div>
@@ -177,9 +236,9 @@ export const MyOrders: React.FC = () => {
                   </div>
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
 
       {/* Receipt Modal */}
@@ -254,6 +313,37 @@ export const MyOrders: React.FC = () => {
                 className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
               >
                 Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {orderToCancel && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-8 pb-4 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
+                <X className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Cancel this order?</h3>
+              <p className="text-sm text-gray-500 text-center mt-2">
+                This will cancel your order and restore the items to our inventory. Are you sure?
+              </p>
+            </div>
+            <div className="p-8 flex gap-3">
+              <button
+                onClick={() => setOrderToCancel(null)}
+                className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors"
+              >
+                No, Keep It
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition-colors shadow-lg shadow-orange-200"
+              >
+                Yes, Cancel
               </button>
             </div>
           </div>
