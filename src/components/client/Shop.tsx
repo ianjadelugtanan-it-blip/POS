@@ -9,7 +9,7 @@ import { SkeletonProductCard } from '../ui/Skeleton';
 
 
 export const Shop: React.FC = () => {
-  const { products, setProducts, setClientCart, isLoadingProducts } = useAppContext();
+  const { user, products, setProducts, setClientCart, isLoadingProducts } = useAppContext();
   
   useEffect(() => {
     const refetchProducts = async () => {
@@ -40,6 +40,10 @@ export const Shop: React.FC = () => {
   }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product, quantity: number) => {
+    if (!user) {
+      alert("Please Sign In first to add items to your cart!");
+      return;
+    }
     setClientCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       

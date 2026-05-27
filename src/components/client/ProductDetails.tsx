@@ -188,7 +188,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack,
                   product={recProduct} 
                   onAddToCart={onAddToCart}
                   onClick={(e) => {
-                    e.stopPropagation();
+                    e?.stopPropagation();
                     if (onSelectProduct) onSelectProduct(recProduct);
                   }}
                 />

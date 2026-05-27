@@ -293,14 +293,14 @@ export const OrderManagement: React.FC = () => {
                        </button>
                      )}
 
-                     {(order.status === 'pending' || order.status === 'processing' || order.status === 'declined') && (
-                       <button 
-                         onClick={() => setOrderToDelete(order.id)}
-                         className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all"
-                       >
-                         Delete
-                       </button>
-                     )}
+                      {(order.status === 'completed' || order.status === 'declined') && (
+                        <button 
+                       onClick={() => setOrderToDelete(order.id)}
+                       className="px-4 py-2 bg-red-600 text-white border border-red-200 rounded-lg text-sm font-medium hover:bg-red-700 transition-all"
+                     >
+                       Delete
+                     </button>
+                      )}
                   </div>
                 </div>
              </div>

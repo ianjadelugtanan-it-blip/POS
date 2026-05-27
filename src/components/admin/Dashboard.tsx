@@ -40,7 +40,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     return { day, total };
   });
 
-  const lowStockProducts = products.filter(p => p.stock < 5 && p.stock > 0);
+  const lowStockProducts = products.filter(p => p.stock < 3 && p.stock > 0);
 
   const activeOrders = orders.filter((o) => {
     const status = String(o.status ?? '').trim().toLowerCase();

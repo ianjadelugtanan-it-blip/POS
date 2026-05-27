@@ -5,7 +5,11 @@ import { Eye, EyeOff, Shirt } from 'lucide-react';
 import { SuccessModal } from './ui/SuccessModal';
 
 
-export const Login: React.FC = () => {
+interface LoginProps {
+  onBack?: () => void;
+}
+
+export const Login: React.FC<LoginProps> = ({ onBack }) => {
   const { setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   
@@ -345,8 +349,16 @@ export const Login: React.FC = () => {
                  setPassword('');
                  setConfirmPassword('');
                }} className="text-sienna font-bold hover:underline">Sign in instead</button>
-
              </p>
+             {onBack && (
+               <button 
+                 type="button" 
+                 onClick={onBack} 
+                 className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
+               >
+                 ← Back to Storefront
+               </button>
+             )}
            </div>
 
         </div>

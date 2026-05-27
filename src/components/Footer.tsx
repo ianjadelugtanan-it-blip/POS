@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="w-full mt-20 border-t relative z-10" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--parchment)' }}>
       <div className="max-w-[1500px] mx-auto px-5 py-16 md:px-10">
-        
+
         {/* Brand Values / Trust Signals */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-12 border-b mb-12" style={{ borderColor: 'var(--border-strong)' }}>
           <div className="flex flex-col items-center text-center">
@@ -64,18 +64,18 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="flex gap-16 md:gap-24">
-             <div className="flex flex-col gap-3.5 text-sm">
-                <span className="font-bold uppercase tracking-widest mb-2 text-xs" style={{ color: 'var(--brown)' }}>Shop</span>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>New Arrivals</a>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Best Sellers</a>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Collections</a>
-             </div>
-             <div className="flex flex-col gap-3.5 text-sm">
-                <span className="font-bold uppercase tracking-widest mb-2 text-xs" style={{ color: 'var(--brown)' }}>Support</span>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>FAQ / Help</a>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Shipping & Returns</a>
-                <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Contact Us</a>
-             </div>
+            <div className="flex flex-col gap-3.5 text-sm">
+              <span className="font-bold uppercase tracking-widest mb-2 text-xs" style={{ color: 'var(--brown)' }}>Shop</span>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>New Arrivals</a>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Best Sellers</a>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Collections</a>
+            </div>
+            <div className="flex flex-col gap-3.5 text-sm">
+              <span className="font-bold uppercase tracking-widest mb-2 text-xs" style={{ color: 'var(--brown)' }}>Support</span>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>FAQ / Help</a>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Shipping & Returns</a>
+              <a href="#" className="hover:underline hover:text-gray-900 transition-all font-medium" style={{ color: 'var(--text-muted)' }}>Contact Us</a>
+            </div>
           </div>
         </div>
 

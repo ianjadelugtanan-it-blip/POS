@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from './context/AppContext';
 import { AppContextProvider } from './context/AppContextProvider';
-import { Login } from './components/Login';
+const Login = React.lazy(() => import('./components/Login').then(module => ({ default: module.Login })));
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/admin/Dashboard';
 import { POSCashier } from './components/admin/POSCashier';
@@ -13,6 +13,7 @@ import { Shop } from './components/client/Shop';
 import { Cart } from './components/client/Cart';
 import { Checkout } from './components/client/Checkout';
 import { MyOrders } from './components/client/MyOrders';
+import { Home } from './components/client/Home';
 import { ClientNavbar } from './components/client/ClientNavbar';
 import { Footer } from './components/Footer';
 import { Menu, Shirt, Search, Bell, LogOut, Sun, Moon } from 'lucide-react';
@@ -44,6 +45,7 @@ const MainApp: React.FC = () => {
 
   const [isCheckout, setIsCheckout] = useState(false);
   const [checkoutItemIds, setCheckoutItemIds] = useState<Set<string>>(new Set());
+  const [isLoginView, setIsLoginView] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   
@@ -83,7 +85,7 @@ const MainApp: React.FC = () => {
   // Intercept the very first frame of login to prevent UI flash
   if (user && !prevUser) {
     setPrevUser(user);
-    setActiveTab(user.role === 'admin' ? 'dashboard' : 'shop');
+    setActiveTab(user.role === 'admin' ? 'dashboard' : 'home');
     setShowWelcome(true);
     setIsFadingOut(false);
   } else if (!user && prevUser) {
@@ -102,19 +104,37 @@ const MainApp: React.FC = () => {
     }
   }, [showWelcome, isFadingOut]);
 
-  const lowStockProducts = products ? products.filter(p => p.stock < 5 && p.stock > 0) : [];
+  const lowStockProducts = products ? products.filter(p => p.stock < 3 && p.stock > 0) : [];
+  const lowStockBadge = lowStockProducts.length > 0 ? 1 : 0;
   const pendingOrders = orders ? orders.filter(o => o.status === 'pending' || o.status === 'processing') : [];
   
-  let totalNotifications = lowStockProducts.length;
-if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
+  let totalNotifications = lowStockBadge;
+  if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
 
-  if (!user) return <Login />;
-
-  if (user.role === 'client' && !['shop', 'cart', 'my-orders'].includes(activeTab)) {
-    setActiveTab('shop');
+  // Show standalone landing page when no user is logged in
+  if (!user && isLoginView) {
+    return (
+      <React.Suspense fallback={
+        <div className="min-h-screen flex flex-col items-center justify-center space-y-4" style={{ backgroundColor: 'var(--cream)' }}>
+          <div className="w-12 h-12 border-4 rounded-full animate-spin border-[var(--brown)] border-t-transparent"></div>
+          <p className="text-[var(--brown)] font-bold tracking-widest uppercase text-xs animate-pulse">Loading secure connection...</p>
+        </div>
+      }>
+        <Login onBack={() => setIsLoginView(false)} />
+      </React.Suspense>
+    );
   }
-  if (user.role === 'admin' && ['shop', 'cart', 'my-orders'].includes(activeTab)) {
-    setActiveTab('dashboard');
+
+  if (!user) {
+    return <Home onNavigate={() => setIsLoginView(true)} isGuest />;
+  }
+  if (user) {
+    if (user.role === 'client' && !['shop', 'cart', 'my-orders'].includes(activeTab)) {
+      setActiveTab('shop');
+    }
+    if (user.role === 'admin' && ['shop', 'cart', 'my-orders'].includes(activeTab)) {
+      setActiveTab('dashboard');
+    }
   }
 
   const handleCheckoutComplete = () => {
@@ -122,9 +142,12 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
     handleTabChange('my-orders');
   };
 
+  const isClient = !user || user.role === 'client';
+  const isAdmin = user && user.role === 'admin';
+
   return (
-    <div className={`flex h-screen overflow-hidden ${user.role === 'client' ? 'flex-col' : ''}`} style={{ backgroundColor: 'var(--cream)' }}>
-      {user.role === 'admin' ? (
+    <div className={`flex h-screen overflow-hidden ${isClient ? 'flex-col' : ''}`} style={{ backgroundColor: 'var(--cream)' }}>
+      {isAdmin ? (
         <Sidebar
           activeTab={activeTab}
           setActiveTab={handleTabChange}
@@ -135,6 +158,7 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
         <ClientNavbar 
           activeTab={activeTab}
           setActiveTab={handleTabChange}
+          onSignInClick={() => setIsLoginView(true)}
         />
       )}
 
@@ -144,7 +168,7 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
           style={{ backgroundImage: 'radial-gradient(#C9B99A 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
         {/* Top Bar (Admin Only) */}
-        {user.role === 'admin' && (
+        {isAdmin && (
           <header className="px-5 py-5 md:px-10 flex items-center justify-between border-b border-[var(--border)] bg-transparent">
             <div className="relative w-full max-w-md hidden md:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -233,8 +257,8 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
           </header>
         )}
 
-        <main className={`relative z-10 min-h-full ${user.role === 'admin' ? 'px-5 py-7 md:px-10 md:py-10 max-w-[1500px]' : 'px-4 py-8 md:px-8 md:py-12 max-w-7xl'} mx-auto`}>
-          {user.role === 'admin' ? (
+        <main className={`relative z-10 min-h-full ${isAdmin ? 'px-5 py-7 md:px-10 md:py-10 max-w-[1500px]' : 'px-4 py-8 md:px-8 md:py-12 max-w-7xl'} mx-auto`}>
+          {isAdmin ? (
             isTabLoading ? (
               <div className="animate-in fade-in duration-300">
                 {loadingTab === 'dashboard' && <SkeletonDashboard />}
@@ -326,6 +350,7 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
               </div>
             ) : (
               <>
+                {activeTab === 'home' && <Home onNavigate={handleTabChange} />}
                 {activeTab === 'shop' && <Shop />}
                 {activeTab === 'cart' && (
                   isCheckout ? (
@@ -364,7 +389,7 @@ if (pendingOrders.length > 0) totalNotifications += pendingOrders.length;
             <div className="w-1.5 h-1.5 rounded-full bg-[var(--sienna)] animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
           <p className="text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase mt-4">
-            {user.role === 'admin' ? 'Initializing Workspace...' : 'Preparing Your Boutique...'}
+            {user?.role === 'admin' ? 'Initializing Workspace...' : 'Preparing Your Boutique...'}
           </p>
         </div>
       )}

@@ -31,9 +31,9 @@ export const SalesReport: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-         <div className="card p-6 bg-slate-900 text-white border-none">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Global Revenue</p>
-            <p className="text-3xl font-black font-mono">₱{totalRevenue.toLocaleString()}</p>
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Global Revenue</p>
+            <p className="text-3xl font-black font-mono text-gray-900">₱{totalRevenue.toLocaleString()}</p>
          </div>
          <div className="card p-6 bg-white">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order Volume</p>

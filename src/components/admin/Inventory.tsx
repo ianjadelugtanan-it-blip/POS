@@ -275,8 +275,8 @@ export const Inventory: React.FC = () => {
                       ₱{product.price.toFixed(2)}
                     </td>
                     <td className="p-4">
-                      <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${product.stock <= 5 ? 'text-red-600' : 'text-green-600'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full ${product.stock <= 5 ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></div>
+                      <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${product.stock < 3 ? 'text-red-600' : product.stock <= 7 ? 'text-yellow-600' : 'text-green-600'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${product.stock < 3 ? 'bg-red-500 animate-pulse' : product.stock <= 7 ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
                         {product.stock} units
                       </span>
                     </td>

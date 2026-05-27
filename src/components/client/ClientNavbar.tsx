@@ -8,9 +8,10 @@ interface ClientNavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onOpenMobileMenu?: () => void;
+  onSignInClick?: () => void;
 }
 
-export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActiveTab }) => {
+export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActiveTab, onSignInClick }) => {
   const { user, logout, clientCart, isLoggingOut } = useAppContext();
   const { theme, toggleTheme } = useTheme(user !== null, isLoggingOut);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -115,26 +116,37 @@ export const ClientNavbar: React.FC<ClientNavbarProps> = ({ activeTab, setActive
                 ?
               </button>
 
-              <button
-                onClick={() => setActiveTab('cart')}
-                className={cartButtonClass}
-                style={cartActiveStyle}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/20">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+              {user ? (
+                <>
+                  <button
+                    onClick={() => setActiveTab('cart')}
+                    className={cartButtonClass}
+                    style={cartActiveStyle}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/20">
+                        {cartCount}
+                      </span>
+                    )}
+                  </button>
 
-              <button 
-                onClick={() => setShowSignOutModal(true)}
-                className="p-2.5 rounded-full bg-white/10 text-white/80 hover:bg-red-500/20 hover:text-red-200 transition-all"
-                title="Sign Out"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+                  <button 
+                    onClick={() => setShowSignOutModal(true)}
+                    className="p-2.5 rounded-full bg-white/10 text-white/80 hover:bg-red-500/20 hover:text-red-200 transition-all"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={onSignInClick}
+                  className="px-4 py-2 bg-white text-brown font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-slate-100 transition-all ml-2"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
 
