@@ -177,6 +177,15 @@ export const MyOrders: React.FC = () => {
 
                   {order.estimatedArrival && (
                     (() => {
+                      if (order.status === 'completed') {
+                        return (
+                          <div className="flex items-start gap-2 text-sm p-3 rounded-lg mb-6 border font-medium animate-in fade-in bg-green-50 text-green-700 border-green-200">
+                            <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-500" />
+                            <p className="leading-snug">Order Received</p>
+                          </div>
+                        );
+                      }
+
                       const today = new Date();
                       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                       const isToday = order.estimatedArrival.startsWith(todayStr);

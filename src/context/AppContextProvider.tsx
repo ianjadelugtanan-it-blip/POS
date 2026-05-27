@@ -86,7 +86,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
     fetchInitialData();
-  }, [user?.role]);
+  }, [user]);
 
   // Sync carts to localStorage
   useEffect(() => {

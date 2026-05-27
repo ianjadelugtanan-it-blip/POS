@@ -10,6 +10,8 @@ interface CheckoutProps {
   onOrderComplete: () => void;
 }
 
+const generateId = () => Math.random().toString(36).substring(2, 9).toUpperCase();
+
 export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCart, onOrderComplete }) => {
   const { user, clientCart, setClientCart, orders, setOrders, setProducts } = useAppContext();
   const [name, setName] = useState('');
@@ -55,7 +57,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCar
     }
 
     const newOrder: Order = {
-      id: Math.random().toString(36).substring(2, 9).toUpperCase(),
+      id: generateId(),
       customerName: name,
       address,
       contactNumber: contact,

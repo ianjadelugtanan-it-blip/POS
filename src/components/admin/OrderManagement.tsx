@@ -10,6 +10,15 @@ export const OrderManagement: React.FC = () => {
   const { orders, setOrders, isLoadingOrders, setProducts } = useAppContext();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const [activeOrderForETA, setActiveOrderForETA] = useState<string | null>(null);
+  const [etaDate, setEtaDate] = useState('');
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [receiptView, setReceiptView] = useState<string | null>(null);
+  const [orderToDecline, setOrderToDecline] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [isSubmittingDecline, setIsSubmittingDecline] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Shortcut '/' to focus Search input (Heuristic 7: Flexibility & Efficiency)
@@ -37,14 +46,6 @@ export const OrderManagement: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-  const [activeOrderForETA, setActiveOrderForETA] = useState<string | null>(null);
-  const [etaDate, setEtaDate] = useState('');
-  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [receiptView, setReceiptView] = useState<string | null>(null);
-  const [orderToDecline, setOrderToDecline] = useState<string | null>(null);
-  const [declineReason, setDeclineReason] = useState('');
-  const [isSubmittingDecline, setIsSubmittingDecline] = useState(false);
 
 
   const filteredOrders = orders.filter(o => 

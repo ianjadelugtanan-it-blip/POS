@@ -22,9 +22,6 @@ export const Login: React.FC<LoginProps> = ({ onBack }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', color: '' });
-
-
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
@@ -51,11 +48,8 @@ export const Login: React.FC<LoginProps> = ({ onBack }) => {
     }
   }, [lockoutTimer, error]);
 
-  useEffect(() => {
-    if (!password) {
-      setPasswordStrength({ score: 0, label: '', color: '' });
-      return;
-    }
+  const passwordStrength = React.useMemo(() => {
+    if (!password) return { score: 0, label: '', color: '' };
 
     let score = 0;
     if (password.length > 6) score++;
@@ -85,7 +79,7 @@ export const Login: React.FC<LoginProps> = ({ onBack }) => {
         color = 'text-green-600';
         break;
     }
-    setPasswordStrength({ score, label, color });
+    return { score, label, color };
   }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
