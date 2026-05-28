@@ -142,41 +142,109 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
         {/* Sales Trend Chart Container */}
-        <div className="lg:col-span-2 p-6 rounded-xl border border-[var(--border)] flex flex-col" style={{ backgroundColor: 'var(--warm-white)' }}>
-          <div className="flex items-center justify-between mb-12">
-            <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>Sales Trend <span className="text-[11px] font-sans font-medium text-gray-400 ml-1 tracking-wide">(Last 7 Days)</span></h3>
-            <button className="px-3 py-1.5 rounded-full text-[9px] uppercase font-bold tracking-wider flex items-center gap-2 border border-[var(--border)] bg-[var(--parchment)]" style={{ color: 'var(--brown)' }}>
-              <span className="w-2 h-2 rounded-full bg-[var(--brown)]"></span> WEEKLY REVENUE
-            </button>
+        <div className="lg:col-span-2 p-6 rounded-xl border border-[var(--border)] flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--warm-white)' }}>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-[17px]" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>
+                Sales Trend <span className="text-[11px] font-sans font-medium text-gray-400 ml-1 tracking-wide">(Last 7 Days)</span>
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Weekly total chip */}
+              <div className="px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide border border-[var(--border)] flex items-center gap-1.5" style={{ backgroundColor: 'var(--parchment)', color: 'var(--sienna)' }}>
+                <span>WEEK</span>
+                <span className="font-black font-mono">₱{dailySales.reduce((s, d) => s + d.total, 0).toLocaleString()}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-end justify-between gap-2 md:gap-4 h-48 mt-auto relative">
-            {/* Background grid line */}
-            <div className="absolute bottom-0 left-0 w-full border-t border-dashed border-[var(--border)] z-0"></div>
+
+          {/* Bars */}
+          <div className="flex items-end justify-between gap-2 md:gap-3 mt-auto relative" style={{ height: '168px' }}>
+            {/* Horizontal grid lines */}
+            {[25, 50, 75, 100].map(pct => (
+              <div key={pct} className="absolute w-full border-t border-dashed pointer-events-none" style={{ bottom: `${pct}%`, borderColor: 'var(--border)', opacity: 0.45 }} />
+            ))}
+
             {dailySales.map((data, idx) => {
-               const maxSale = Math.max(...dailySales.map(d => d.total), 100);
-               const height = (data.total / maxSale) * 100;
-               const isHighlighted = idx === 5; // e.g. highlighting Saturday like the mockup
-               return (
-                 <div key={data.day} className="flex-1 flex flex-col items-center gap-4 group z-10 h-full justify-end">
-                    <div className="relative w-full flex flex-col items-center h-full justify-end">
-                       {/* Tooltip */}
-                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[var(--charcoal)] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-bold pointer-events-none z-20">
-                         ₱{data.total.toLocaleString()}
-                       </div>
-                       <div 
-                         className="w-full max-w-[36px] transition-all duration-500 rounded-t-md"
-                         style={{ height: `${Math.max(height, 5)}%`, backgroundColor: isHighlighted ? 'var(--brown)' : 'var(--parchment)' }}
-                       >
-                       </div>
+              const maxSale = Math.max(...dailySales.map(d => d.total), 1);
+              const height = Math.max((data.total / maxSale) * 100, data.total > 0 ? 8 : 3);
+              const isToday = idx === dailySales.length - 1;
+              const dayLabel = new Date(data.day).toLocaleDateString('en-US', { weekday: 'short' });
+
+              let barStyle: React.CSSProperties;
+              if (isToday && data.total > 0) {
+                barStyle = { background: 'linear-gradient(180deg, var(--sienna) 0%, var(--brown) 100%)', boxShadow: '0 4px 20px rgba(196,117,43,0.4)' };
+              } else if (data.total > 0) {
+                barStyle = { background: 'linear-gradient(180deg, var(--sand) 0%, var(--border-strong) 100%)' };
+              } else {
+                barStyle = { backgroundColor: 'var(--parchment)', border: '1px solid var(--border)' };
+              }
+
+              return (
+                <div key={data.day} className="flex-1 flex flex-col items-center gap-2 group z-10 h-full justify-end">
+                  <div className="relative w-full flex flex-col items-center justify-end h-full">
+                    {/* Value label above bar */}
+                    {data.total > 0 && (
+                      <div
+                        className="absolute text-[9px] font-black font-mono whitespace-nowrap"
+                        style={{
+                          bottom: `calc(${height}% + 7px)`,
+                          color: isToday ? 'var(--sienna)' : 'var(--text-muted)',
+                          opacity: isToday ? 1 : 0.65,
+                        }}
+                      >
+                        ₱{data.total >= 1000 ? (data.total / 1000).toFixed(1) + 'k' : data.total}
+                      </div>
+                    )}
+
+                    {/* Pulse ring on today's bar (bottom anchor) */}
+                    {isToday && data.total > 0 && (
+                      <div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full pointer-events-none"
+                        style={{
+                          background: 'radial-gradient(circle, rgba(196,117,43,0.25) 0%, transparent 70%)',
+                          animation: 'ping 2s cubic-bezier(0,0,0.2,1) infinite',
+                        }}
+                      />
+                    )}
+
+                    {/* The bar */}
+                    <div
+                      className="w-full max-w-[40px] rounded-t-xl transition-all duration-700 ease-out cursor-default group-hover:brightness-110 group-hover:scale-x-105 origin-bottom relative overflow-hidden"
+                      style={{ height: `${height}%`, ...barStyle }}
+                    >
+                      {/* Shine cap */}
+                      <div className="absolute top-0 left-0 w-full h-2 rounded-t-xl" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)' }} />
                     </div>
-                    <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: isHighlighted ? 'var(--charcoal)' : 'var(--text-light)' }}>
-                       {new Date(data.day).toLocaleDateString('en-US', { weekday: 'short' })}
-                    </span>
-                 </div>
-               );
+                  </div>
+
+                  {/* Day label */}
+                  <span
+                    className="text-[9px] font-black uppercase tracking-widest transition-colors"
+                    style={{ color: isToday ? 'var(--sienna)' : 'var(--text-light)' }}
+                  >
+                    {dayLabel}
+                    {isToday && <span className="block text-center" style={{ fontSize: '7px', letterSpacing: 0, color: 'var(--sienna)' }}>TODAY</span>}
+                  </span>
+                </div>
+              );
             })}
           </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-dashed border-[var(--border)]">
+            <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-light)' }}>
+              <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: 'linear-gradient(180deg, var(--sienna), var(--brown))' }} />
+              Today
+            </div>
+            <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-light)' }}>
+              <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ background: 'linear-gradient(180deg, var(--sand), var(--border-strong))' }} />
+              Past Days
+            </div>
+          </div>
         </div>
+
 
         {/* Pending Orders List */}
         <div className="p-0 rounded-xl border border-[var(--border)] flex flex-col relative" style={{ backgroundColor: 'var(--warm-white)' }}>

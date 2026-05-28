@@ -25,8 +25,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
             <p>Yes! We currently support Cash on Delivery (COD) as our primary payment method.</p>
           </div>
           <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <strong className="block text-gray-900 mb-1">How do I track my order?</strong>
-            <p>Once you are signed in, click on the "Track Orders" button to see the real-time status of your purchases.</p>
+            <strong className="block text-gray-900 mb-1">How do I check my orders?</strong>
+            <p>Once you are signed in, you can view your order history and status under the "My Orders" section.</p>
           </div>
         </div>
         <div className="mt-8 flex justify-end">

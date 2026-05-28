@@ -121,7 +121,7 @@ const MainApp: React.FC = () => {
           <p className="text-[var(--brown)] font-bold tracking-widest uppercase text-xs animate-pulse">Loading secure connection...</p>
         </div>
       }>
-        <Login onBack={() => setIsLoginView(false)} />
+        <Login />
       </React.Suspense>
     );
   }

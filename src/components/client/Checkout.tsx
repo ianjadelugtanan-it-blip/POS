@@ -19,6 +19,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCar
   const [contact, setContact] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'Cash on Delivery' | 'GCash' | 'Bank Transfer'>('Cash on Delivery');
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showReceiptErrorModal, setShowReceiptErrorModal] = useState(false);
   const [isQrZoomed, setIsQrZoomed] = useState(false);
 
   const selectedItems = clientCart.filter(item => selectedItemIds.has(item.id));
@@ -53,6 +54,12 @@ export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCar
     const phoneRegex = /^09\d{9}$/;
     if (!phoneRegex.test(contact)) {
       setShowErrorModal(true);
+      return;
+    }
+
+    // Validate GCash receipt upload
+    if (paymentMethod === 'GCash' && !receiptImage) {
+      setShowReceiptErrorModal(true);
       return;
     }
 
@@ -226,7 +233,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCar
                                       accept="image/*" 
                                       onChange={handleImageUpload}
                                       className="hidden"
-                                      required={paymentMethod === 'GCash' && !receiptImage}
                                    />
                                  </label>
                                  {receiptImage && (
@@ -357,6 +363,40 @@ export const Checkout: React.FC<CheckoutProps> = ({ selectedItemIds, onBackToCar
             >
               Okay
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* GCash Receipt Missing Error Modal */}
+      {showReceiptErrorModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-charcoal/60 backdrop-blur-md animate-cascade">
+          <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-md bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-2 border-sand/30 overflow-hidden">
+            <div className="texture-overlay absolute inset-0 opacity-10 pointer-events-none" />
+            <div className="relative p-8 text-center">
+              {/* Icon */}
+              <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-6 animate-tag-swing" style={{ background: 'rgba(196,117,43,0.1)' }}>
+                <svg className="w-10 h-10" style={{ color: 'var(--sienna)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              {/* Text */}
+              <h3 className="text-2xl font-bold text-brown mb-3 tracking-tight leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Receipt Required
+              </h3>
+              <p className="text-text-muted mb-8 leading-relaxed">
+                Please upload your GCash payment receipt screenshot before placing your order.
+              </p>
+              {/* Button */}
+              <button
+                type="button"
+                onClick={() => setShowReceiptErrorModal(false)}
+                className="w-full btn-primary py-3.5 shadow-lg shadow-sienna/20 hover:shadow-sienna/40 transition-all"
+              >
+                Okay, I'll Upload It
+              </button>
+            </div>
+            {/* Decorative bottom bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-sienna via-olive to-rust" />
           </div>
         </div>
       )}

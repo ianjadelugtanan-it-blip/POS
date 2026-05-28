@@ -229,11 +229,7 @@ export const MyOrders: React.FC = () => {
                           <X className="w-3 h-3" /> Cancel
                         </button>
                       )}
-                      {(order.status === 'completed' || order.status === 'declined' || order.status === 'cancelled') && (
-                        <button onClick={() => setOrderToDelete(order.id)} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[11px] font-bold uppercase hover:bg-red-600 hover:text-white transition-all flex items-center gap-1.5">
-                          <Trash2 className="w-3 h-3" /> Delete
-                        </button>
-                      )}
+
                       <button onClick={() => setSelectedReceipt(order)} className="px-3 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-[11px] font-bold uppercase hover-bg-black hover:text-white transition-all flex items-center gap-1.5">
                         <FileText className="w-3 h-3" /> Receipt
                       </button>
