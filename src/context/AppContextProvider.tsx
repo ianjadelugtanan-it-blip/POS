@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { User, Product, Transaction, Order, CartItem } from '../types';
 import { AppContext } from './AppContext';
 
-export const API_BASE_URL = 'http://localhost/api'; // Reverted to standard port 80
+import { API_BASE_URL } from '../config';
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // We keep the logged-in user in localStorage for session persistence

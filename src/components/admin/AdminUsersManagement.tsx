@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 
 export const AdminUsersManagement: React.FC = () => {
   const { users, setUsers } = useAppContext();

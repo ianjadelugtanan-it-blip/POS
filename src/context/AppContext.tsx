@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { User, Product, CartItem, Transaction, Order } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { API_BASE_URL } from './AppContextProvider';
+import { API_BASE_URL } from '../config';
 
 export interface AppContextType {
   user: User | null;

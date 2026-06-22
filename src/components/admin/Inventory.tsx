@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, ImagePlus } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 
 export const Inventory: React.FC = () => {
   const { products, setProducts } = useAppContext();

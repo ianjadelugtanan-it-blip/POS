@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Search, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import type { Product } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 import { ProductCard } from '../ProductCard';
 
 export const POSCashier: React.FC = () => {

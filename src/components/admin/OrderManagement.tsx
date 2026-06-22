@@ -3,7 +3,7 @@ import { Package, Clock, RotateCw, CheckCircle, MapPin, Calendar as CalendarIcon
 import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
-import { API_BASE_URL } from '../../context/AppContextProvider';
+import { API_BASE_URL } from '../../config';
 
 export const OrderManagement: React.FC = () => {
   const { orders, setOrders } = useAppContext();
