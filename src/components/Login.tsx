@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { API_BASE_URL } from '../config';
+<<<<<<< HEAD
 import { Eye, EyeOff } from 'lucide-react';
+=======
+import { Eye, EyeOff, Shirt } from 'lucide-react';
+import { SuccessModal } from './ui/SuccessModal';
+>>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
 
-export const Login: React.FC = () => {
+
+interface LoginProps {}
+
+export const Login: React.FC<LoginProps> = () => {
   const { setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   
-  const [name, setName] = useState('');
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,7 +23,7 @@ export const Login: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
@@ -41,6 +49,40 @@ export const Login: React.FC = () => {
       setError('');
     }
   }, [lockoutTimer, error]);
+
+  const passwordStrength = React.useMemo(() => {
+    if (!password) return { score: 0, label: '', color: '' };
+
+    let score = 0;
+    if (password.length > 6) score++;
+    if (password.length > 10) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    let label = '';
+    let color = '';
+
+    switch (score) {
+      case 0:
+      case 1:
+        label = 'Weak';
+        color = 'text-red-500';
+        break;
+      case 2:
+        label = 'Fair';
+        color = 'text-orange-500';
+        break;
+      case 3:
+        label = 'Good';
+        color = 'text-olive';
+        break;
+      case 4:
+        label = 'Strong';
+        color = 'text-green-600';
+        break;
+    }
+    return { score, label, color };
+  }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,13 +137,19 @@ export const Login: React.FC = () => {
         const result = await response.json();
 
         if (response.ok) {
-          // Auto-login or switch to login mode
+          // Clear credentials so they don't persist in login form
+          setUsername('');
+          setPassword('');
+          setConfirmPassword('');
+          
+          
           setIsLogin(true);
           setError('');
-          alert('Registration successful! Please login.');
+          setShowSuccessModal(true);
         } else {
           setError(result.error || 'Registration failed.');
         }
+
       }
     } catch {
       setError('Connection to server failed. Is XAMPP running?');
@@ -111,197 +159,199 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center overflow-hidden relative" style={{ backgroundColor: 'var(--cream)' }}>
+    <div className={`sliding-container animate-in fade-in zoom-in-[0.98] duration-700 ease-out ${!isLogin ? 'is-registering' : ''}`}>
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)}
+        title="Welcome to The Find!"
+        message="Your account has been created successfully. You can now sign in with your credentials to start your collection of stories."
+      />
+
       
-      {/* Warm background blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-[32rem] h-[32rem] rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #E8D9C0 0%, transparent 70%)' }} />
-        <div className="absolute -bottom-24 -right-24 w-[28rem] h-[28rem] rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #C4752B22 0%, transparent 70%)' }} />
-        {/* Scattered dot texture */}
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#C9B99A 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-      </div>
-
-      <div className="w-full max-w-[420px] px-4 relative z-10 animate-cascade">
-
-        {/* Logo / Brand */}
-        <div className="text-center mb-8">
-          {/* Hanger icon */}
-          <div className="flex items-center justify-center mb-4">
-            <svg viewBox="0 0 60 48" className="w-16 h-16 animate-tag-swing" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M30 6 C30 6 36 2 38 8 C40 14 34 14 34 14" stroke="#C4752B" strokeWidth="2.5" strokeLinecap="round"/>
-              <circle cx="30" cy="5" r="3" stroke="#C4752B" strokeWidth="2.5" fill="none"/>
-              <path d="M30 14 L5 40 Q3 44 8 44 L52 44 Q57 44 55 40 L30 14Z" stroke="#5C3D2E" strokeWidth="2.5" fill="#FAF6EF" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold mb-1" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--brown)' }}>
-            The Find
-          </h1>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-            Curated Thrift & Pre-Loved Goods
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="rounded-2xl border overflow-hidden shadow-lg" style={{ backgroundColor: 'var(--warm-white)', borderColor: 'var(--border)' }}>
-          
-          {/* Card header */}
-          <div className="px-8 pt-7 pb-5 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--parchment)' }}>
-            <div className="vintage-divider">
-              <span>{isLogin ? 'Sign In to Your Account' : 'Create an Account'}</span>
+      {/* ── Visual Sliding Overlay ── */}
+      <div className="overlay-side flex">
+        <div className="overlay-bg-texture" />
+        <div className="texture-overlay absolute inset-0 opacity-10" />
+        
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Content for Login Mode (Image on Left) */}
+          <div className="overlay-content overlay-left flex flex-col items-center">
+            <div className="mb-8 p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 animate-tag-swing">
+              <svg viewBox="0 0 60 48" className="w-24 h-24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 6 C30 6 36 2 38 8 C40 14 34 14 34 14" stroke="#F2EAD8" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M30 14 L5 40 Q3 44 8 44 L52 44 Q57 44 55 40 L30 14Z" stroke="white" strokeWidth="2.5" fill="rgba(255,255,255,0.1)" strokeLinejoin="round"/>
+              </svg>
             </div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4 tracking-tight">Welcome Back</h1>
+            <p className="hidden md:block text-lg text-parchment max-w-sm font-medium">
+              Continue your journey of discovery. Your curated finds are waiting for you.
+            </p>
           </div>
 
-          <div className="p-8">
-            {error && (
-              <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5" style={{ backgroundColor: '#FEF2F2', color: 'var(--rust)', border: '1px solid #FECACA' }}>
-                <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>
-                {error}
-              </div>
-            )}
-
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              {!isLogin && (
-                <div>
-                  <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="input-field"
-                    placeholder="Jane Doe"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Username
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="input-field"
-                  placeholder="your_username"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (e.target.value === '') setShowPassword(false);
-                    }}
-                    className="input-field pr-10"
-                    placeholder="••••••••"
-                  />
-                  {password.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {!isLogin && (
-                <div>
-                  <label className="block text-xs font-bold mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (e.target.value === '') setShowConfirmPassword(false);
-                      }}
-                      className="input-field pr-10"
-                      placeholder="••••••••"
-                    />
-                    {confirmPassword.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  disabled={lockoutTimer > 0 || isLoading}
-                  className={`w-full py-3 text-sm flex items-center justify-center ${lockoutTimer > 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed rounded-lg font-bold' : 'btn-primary'}`}
-                >
-                  {lockoutTimer > 0 ? `Locked Out (${lockoutTimer}s)` : 
-                   isLoading ? (isLogin ? 'Signing In...' : 'Creating Account...') : 
-                   (isLogin ? 'Sign In' : 'Create Account')}
-                </button>
-              </div>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => { setIsLogin(!isLogin); setError(''); setConfirmPassword(''); }}
-                  className="text-sm font-semibold transition-colors"
-                  style={{ color: 'var(--sienna)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--sienna-dark)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--sienna)')}
-                >
-                  {isLogin ? "New here? Create an account →" : "Already have an account? Sign in →"}
-                </button>
-              </div>
-            </form>
-
-            {isLogin && (
-              <div className="mt-7 pt-6" style={{ borderTop: '1px solid var(--border)' }}>
-                <p className="text-center text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-light)' }}>
-                  Quick Access
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    className="btn-secondary text-xs py-2.5"
-                    onClick={() => { setUsername('admin'); setPassword('123'); }}
-                  >
-                    🏪 Staff Login
-                  </button>
-                  <button 
-                    className="btn-secondary text-xs py-2.5"
-                    onClick={() => { setUsername('client'); setPassword('123'); }}
-                  >
-                    🛍 Shopper Login
-                  </button>
-                </div>
-              </div>
-            )}
+          {/* Content for Register Mode (Image on Right) */}
+          <div className="overlay-content overlay-right flex flex-col items-center transition-all duration-700">
+            <div className="mb-4 md:mb-8 p-4 md:p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 animate-tag-swing">
+              <svg viewBox="0 0 60 48" className="w-12 h-12 md:w-24 md:h-24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 6 C30 6 36 2 38 8 C40 14 34 14 34 14" stroke="#F2EAD8" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M30 14 L5 40 Q3 44 8 44 L52 44 Q57 44 55 40 L30 14Z" stroke="white" strokeWidth="2.5" fill="rgba(255,255,255,0.1)" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-4 tracking-tight">Join The Find</h1>
+            <p className="hidden md:block text-lg text-parchment max-w-sm font-medium">
+              Start your own collection of stories. Register today to access exclusive pre-loved treasures.
+            </p>
           </div>
         </div>
-
-        <p className="text-center mt-6 text-xs" style={{ color: 'var(--text-light)' }}>
-          © The Find Thrift Shop · All goods pre-loved with care
-        </p>
       </div>
+
+      {/* ── Login Form Side ── */}
+      <div className="form-container login-side">
+        <div className="w-full max-w-[400px] px-8">
+            <div className="flex flex-col items-center md:items-start mb-8">
+               <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4752B] flex items-center justify-center shadow-lg shadow-[#C4752B]/20">
+                     <Shirt className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-brown tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>The Find</span>
+               </div>
+            </div>
+            
+            <div className="mb-10">
+              <h2 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Welcome back</h2>
+              <p className="text-sm text-gray-500 font-medium">Continue your journey into the world of pre-loved treasures.</p>
+           </div>
+
+           {error && isLogin && (
+             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-100">
+               {error}
+             </div>
+           )}
+
+           <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Account Access</label>
+                <input type="text" required value={username} onChange={(e)=>setUsername(e.target.value)} className="input-field" placeholder="Phone number / Username / Email" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Password</label>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} required value={password} onChange={(e)=>setPassword(e.target.value)} className="input-field" placeholder="••••••••" />
+                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" disabled={lockoutTimer > 0 || isLoading} className="w-full btn-primary py-3.5 mt-2">
+                {lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : isLoading ? 'Signing In...' : 'Sign In'}
+              </button>
+           </form>
+
+           <div className="mt-8 text-center">
+             <p className="text-sm text-gray-500">
+               New here? <button onClick={() => { 
+                 setIsLogin(false); 
+                 setError(''); 
+                 setUsername('');
+                 setPassword('');
+                 setConfirmPassword('');
+                 
+               }} className="text-sienna font-bold hover:underline">Create an account</button>
+
+             </p>
+           </div>
+
+
+        </div>
+      </div>
+
+      {/* ── Register Form Side ── */}
+      <div className="form-container register-side">
+        <div className="w-full max-w-[400px] px-8">
+            <div className="flex flex-col items-center md:items-start mb-8">
+               <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#C4752B] flex items-center justify-center shadow-lg shadow-[#C4752B]/20">
+                     <Shirt className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-brown tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>The Find</span>
+               </div>
+            </div>
+
+            <div className="mb-10">
+              <h2 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Create account</h2>
+              <p className="text-sm text-gray-500 font-medium">Join our community of curators and finders.</p>
+           </div>
+
+           {error && !isLogin && (
+             <div className="mb-5 p-3.5 rounded-lg text-sm font-medium flex items-center gap-2.5 bg-red-50 text-red-700 border border-red-100">
+               {error}
+             </div>
+           )}
+
+           <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Username</label>
+                <input type="text" required value={username} onChange={(e)=>setUsername(e.target.value)} className="input-field" placeholder="Phone number / Username / Email" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Password</label>
+                <div className="relative">
+                  <input type={showPassword ? "text" : "password"} required value={password} onChange={(e)=>setPassword(e.target.value)} className="input-field" placeholder="••••••••" />
+                  <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {passwordStrength.label && (
+                  <div className="flex items-center gap-2 mt-1.5 ml-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((step) => (
+                        <div 
+                          key={step} 
+                          className={`h-1 w-6 rounded-full transition-all duration-300 ${
+                            step <= passwordStrength.score ? (
+                              passwordStrength.score <= 1 ? 'bg-red-400' : 
+                              passwordStrength.score === 2 ? 'bg-orange-400' : 
+                              passwordStrength.score === 3 ? 'bg-olive' : 'bg-green-500'
+                            ) : 'bg-gray-200'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${passwordStrength.color}`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-gray-400">Confirm Password</label>
+                <div className="relative">
+                  <input type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={(e)=>setConfirmPassword(e.target.value)} className="input-field" placeholder="••••••••" />
+                  <button type="button" onClick={()=>setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3.5 mt-2">
+                {isLoading ? 'Creating...' : 'Create Account'}
+              </button>
+           </form>
+
+           <div className="mt-8 text-center">
+             <p className="text-sm text-gray-500">
+               Already have an account? <button onClick={() => { 
+                 setIsLogin(true); 
+                 setError(''); 
+                 setUsername('');
+                 setPassword('');
+                 setConfirmPassword('');
+               }} className="text-sienna font-bold hover:underline">Sign in instead</button>
+             </p>
+
+           </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };

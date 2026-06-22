@@ -21,46 +21,101 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [posCart, setPosCart] = useState<CartItem[]>([]);
-  const [clientCart, setClientCart] = useState<CartItem[]>([]);
+  const [posCart, setPosCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('pos_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [clientCart, setClientCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('client_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
   // Fetch initial data from API
   useEffect(() => {
     const fetchInitialData = async () => {
+      // Initialize loading states
+      setIsLoadingProducts(true);
+      setIsLoadingUsers(true);
+      setIsLoadingOrders(true);
+
+      // 1. Fetch Products
       try {
-        // Fetch Products
         const prodRes = await fetch(`${API_BASE_URL}/products/get.php`);
         if (prodRes.ok) setProducts(await prodRes.json());
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
 
-        // Fetch Users (if admin)
-        if (user?.role === 'admin') {
+      // 2. Fetch Users (if admin)
+      if (user?.role === 'admin') {
+        try {
           const userRes = await fetch(`${API_BASE_URL}/users/get.php`);
           if (userRes.ok) setUsers(await userRes.json());
-
-          // Fetch Orders
-          const orderRes = await fetch(`${API_BASE_URL}/orders/get.php`);
-          if (orderRes.ok) setOrders(await orderRes.json());
+        } catch (error) {
+          console.error("Failed to fetch users:", error);
+        } finally {
+          setIsLoadingUsers(false);
         }
-      } catch (error) {
-        console.error("Failed to fetch initial data:", error);
+      } else {
+        setIsLoadingUsers(false);
+      }
+
+      // 3. Fetch Orders
+      if (user) {
+        try {
+          const url = user.role === 'admin' 
+            ? `${API_BASE_URL}/orders/get.php` 
+            : `${API_BASE_URL}/orders/get.php?username=${encodeURIComponent(user.username)}`;
+            
+          const orderRes = await fetch(url);
+          if (orderRes.ok) setOrders(await orderRes.json());
+        } catch (error) {
+          console.error("Failed to fetch orders:", error);
+        } finally {
+          setIsLoadingOrders(false);
+        }
+      } else {
+        setIsLoadingOrders(false);
       }
     };
 
     fetchInitialData();
-  }, [user?.role]);
+  }, [user]);
+
+  // Sync carts to localStorage
+  useEffect(() => {
+    localStorage.setItem('pos_cart', JSON.stringify(posCart));
+  }, [posCart]);
+
+  useEffect(() => {
+    localStorage.setItem('client_cart', JSON.stringify(clientCart));
+  }, [clientCart]);
 
   const logout = () => {
-    setUser(null);
+    setIsLoggingOut(true);
+    setTimeout(() => {
+      setUser(null);
+      setIsLoggingOut(false);
+    }, 1500);
   };
 
   return (
     <AppContext.Provider value={{
-      user, setUser, users, setUsers, logout,
+      user, setUser, users, setUsers, logout, isLoggingOut,
       products, setProducts,
       posCart, setPosCart,
       clientCart, setClientCart,
       transactions, setTransactions,
-      orders, setOrders
+      orders, setOrders,
+      isLoadingProducts,
+      isLoadingUsers,
+      isLoadingOrders
     }}>
       {children}
     </AppContext.Provider>

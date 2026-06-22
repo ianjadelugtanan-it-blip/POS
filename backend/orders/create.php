@@ -24,25 +24,48 @@ try {
     $pdo->beginTransaction();
 
     // 2. Insert into `orders` table
-    $stmt = $pdo->prepare("INSERT INTO orders (id, customer_name, address, contact_number, total, status, date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO orders (id, customer_name, address, contact_number, total, status, date, username, payment_method, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+    $paymentMethod = $order['paymentMethod'] ?? $order['payment_method'] ?? 'Cash on Delivery';
+    $receiptImage = $order['receiptImage'] ?? $order['receipt_image'] ?? null;
+
     $stmt->execute([
         $order['id'],
-        $order['customerName'],
+        $order['customerName'] ?? $order['customer_name'],
         $order['address'] ?? null,
-        $order['contactNumber'] ?? null,
+        $order['contactNumber'] ?? $order['contact_number'] ?? null,
         $order['total'],
         $order['status'] ?? 'pending',
         $order['date'] ?? date('Y-m-d H:i:s'),
-        $order['username'] ?? null
+        $order['username'] ?? null,
+        $paymentMethod,
+        $receiptImage
     ]);
 
-    // 3. Insert each item into `order_items` table
+
+    // 3. Insert each item into `order_items` table and validate stock
     $itemStmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES (?, ?, ?, ?)");
     
-    // Also prepare a statement to update stock
-    $stockStmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+    // Prepare a statement to check current stock (using FOR UPDATE to lock the row)
+    $checkStockStmt = $pdo->prepare("SELECT name, stock FROM products WHERE id = ? FOR UPDATE");
+    
+    // Prepare a statement to update stock
+    $updateStockStmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
 
     foreach ($order['items'] as $item) {
+        // 4. Validate Stock
+        $checkStockStmt->execute([$item['id']]);
+        $product = $checkStockStmt->fetch();
+
+        if (!$product) {
+            throw new Exception("Product not found: " . $item['id']);
+        }
+
+        if ($product['stock'] < $item['quantity']) {
+            throw new Exception("Insufficient stock for product: " . $product['name'] . ". Available: " . $product['stock'] . ", Requested: " . $item['quantity']);
+        }
+
+        // 5. Insert order item
         $itemStmt->execute([
             $order['id'],
             $item['id'],
@@ -50,20 +73,26 @@ try {
             $item['price']
         ]);
 
-        // 4. Update product stock
-        $stockStmt->execute([$item['quantity'], $item['id']]);
+        // 6. Update product stock
+        $updateStockStmt->execute([$item['quantity'], $item['id']]);
     }
 
-    // 5. Commit the transaction
+    // 7. Commit the transaction
     $pdo->commit();
 
     http_response_code(201);
     echo json_encode(['message' => 'Order created successfully and stock updated.']);
 
-} catch (\PDOException $e) {
+} catch (\Exception $e) {
     // Roll back changes if any step fails
-    $pdo->rollBack();
-    http_response_code(500);
-    echo json_encode(['error' => 'Order creation failed: ' . $e->getMessage()]);
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    
+    // If it's a validation error, use 400. Otherwise 500.
+    $isValidationError = strpos($e->getMessage(), 'Insufficient stock') !== false || strpos($e->getMessage(), 'Product not found') !== false;
+    http_response_code($isValidationError ? 400 : 500);
+    
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>

@@ -3,34 +3,46 @@ import { Activity, Calendar, Server, Globe } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export const SalesReport: React.FC = () => {
-  const { transactions, orders } = useAppContext();
+  const { orders } = useAppContext();
 
-  // Merge POS transactions and Completed Online Orders into a single ledger array
-  const completedOrdersAsTransactions = orders
+  // Map completed orders to Ledger entries based on customer type
+  const mergedLedger = orders
     .filter(o => o.status === 'completed')
-    .map(o => ({
-      ...o,
-      source: 'Online Checkout',
-      sourceIcon: Globe
-    }));
+    .map(o => {
+      const isWalkIn = o.customerName === 'Walk-in Customer';
+      return {
+        ...o,
+        source: isWalkIn ? 'Terminal POS' : 'Online Checkout',
+        sourceIcon: isWalkIn ? Server : Globe
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const posTransactions = transactions.map(t => ({
-      ...t,
-      source: 'Terminal POS',
-      sourceIcon: Server
-  }));
-
-  const mergedLedger = [...posTransactions, ...completedOrdersAsTransactions].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const totalRevenue = mergedLedger.reduce((sum, t) => sum + t.total, 0);
+  const avgOrderValue = mergedLedger.length > 0 ? totalRevenue / mergedLedger.length : 0;
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto pb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Global Sales Ledger</h2>
+           <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Global Sales Ledger</h2>
            <p className="text-gray-500 mt-1">Unified view of Terminal Transactions and Completed Delivery Orders.</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Global Revenue</p>
+            <p className="text-3xl font-black font-mono text-gray-900">₱{totalRevenue.toLocaleString()}</p>
+         </div>
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order Volume</p>
+            <p className="text-3xl font-black font-mono text-gray-900">{mergedLedger.length}</p>
+         </div>
+         <div className="card p-6 bg-white">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Avg. Transaction Value</p>
+            <p className="text-3xl font-black font-mono text-gray-900">₱{avgOrderValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+         </div>
       </div>
       
       <div className="card overflow-hidden">
@@ -78,7 +90,7 @@ export const SalesReport: React.FC = () => {
                        </div>
                      </td>
                      <td className="p-5">
-                       <span className="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 rounded border border-gray-200 bg-white shadow-sm text-xs font-bold text-gray-800">
+                       <span className="inline-flex items-center justify-center min-w-[3rem] px-2.5 py-1 rounded border border-gray-200 bg-white shadow-sm text-xs font-bold text-gray-900">
                          {t.items.reduce((s: number, i: { quantity: number }) => s + i.quantity, 0)} Pcs
                        </span>
                      </td>
