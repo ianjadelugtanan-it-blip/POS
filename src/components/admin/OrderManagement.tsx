@@ -4,10 +4,8 @@ import { CalendarPicker } from '../ui/CalendarPicker';
 import type { OrderStatus } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
-<<<<<<< HEAD
-=======
 import { SkeletonOrderCard } from '../ui/Skeleton';
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
+
 
 export const OrderManagement: React.FC = () => {
   const { orders, setOrders, isLoadingOrders, setProducts } = useAppContext();

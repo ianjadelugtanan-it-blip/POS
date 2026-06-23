@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { API_BASE_URL } from '../config';
-<<<<<<< HEAD
-import { Eye, EyeOff } from 'lucide-react';
-=======
 import { Eye, EyeOff, Shirt } from 'lucide-react';
 import { SuccessModal } from './ui/SuccessModal';
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
 
 
-interface LoginProps {}
 
-export const Login: React.FC<LoginProps> = () => {
+
+export const Login: React.FC = () => {
   const { setUser } = useAppContext();
   const [isLogin, setIsLogin] = useState(true);
   

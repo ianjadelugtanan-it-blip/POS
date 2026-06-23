@@ -5,33 +5,21 @@
  */
 
 $allowed_origins = [
-<<<<<<< HEAD
-    'http://localhost:5173', // Vite dev server default
-    'http://127.0.0.1:5173',
-    'http://localhost',      // Localhost production (e.g. XAMPP default)
-=======
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
     'http://127.0.0.1:5173',
     'http://localhost',
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
     'http://127.0.0.1'
 ];
 
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
-<<<<<<< HEAD
-// If the origin is in our allowed list, grant access
-if (in_array($origin, $allowed_origins)) {
-    header("Access-Control-Allow-Origin: $origin");
-=======
 // Allow if in list OR if it's a localhost origin
 if ($origin && (in_array($origin, $allowed_origins) || preg_match('/^http:\/\/localhost(:\d+)?$/', $origin))) {
     header("Access-Control-Allow-Origin: $origin");
     header("Access-Control-Allow-Credentials: true");
     header("Vary: Origin");
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
 }
 
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");

@@ -1,10 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { User, Product, CartItem, Transaction, Order } from '../types';
-<<<<<<< HEAD
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { API_BASE_URL } from '../config';
-=======
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
+
+
 
 export interface AppContextType {
   user: User | null;
@@ -34,10 +31,8 @@ export interface AppContextType {
   isLoadingOrders: boolean;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {

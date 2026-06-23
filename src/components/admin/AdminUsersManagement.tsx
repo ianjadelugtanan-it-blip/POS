@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import type { User } from '../../types';
 import { Users, UserPlus, Shield, Trash2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
-<<<<<<< HEAD
-import { API_BASE_URL } from '../../config';
-=======
 import { AlertBanner } from '../ui/AlertBanner';
 import { API_BASE_URL } from '../../config';
 import { SkeletonUserCard } from '../ui/Skeleton';
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
 
 export const AdminUsersManagement: React.FC = () => {
   const { users, setUsers, isLoadingUsers } = useAppContext();
@@ -17,7 +14,7 @@ export const AdminUsersManagement: React.FC = () => {
   const [userToRemove, setUserToRemove] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [removedUser, setRemovedUser] = useState<any | null>(null);
+  const [removedUser, setRemovedUser] = useState<User | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

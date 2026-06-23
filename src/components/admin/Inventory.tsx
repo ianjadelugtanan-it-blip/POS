@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import type { Product } from '../../types';
 import { Package, Plus, Trash2, ImagePlus, Pencil } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { API_BASE_URL } from '../../config';
-<<<<<<< HEAD
-=======
 import { SkeletonTableRow } from '../ui/Skeleton';
->>>>>>> 7227ed72a474956bb3eaca7a2ed309bc1ba5c6e0
+
 
 export const Inventory: React.FC = () => {
   const { products, setProducts, isLoadingProducts } = useAppContext();
@@ -48,7 +47,7 @@ export const Inventory: React.FC = () => {
     }
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: Product) => {
     setEditingId(product.id);
     setName(product.name);
     setPrice(product.price.toString());
