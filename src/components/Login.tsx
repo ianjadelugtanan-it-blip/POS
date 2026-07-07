@@ -70,7 +70,7 @@ export const Login: React.FC = () => {
         break;
       case 3:
         label = 'Good';
-        color = 'text-olive';
+        color = 'text-green-500';
         break;
       case 4:
         label = 'Strong';

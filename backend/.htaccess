@@ -1,0 +1,9 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Pass requests for real existing files through as-is (e.g. index.php itself)
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Rewrite everything else under /POS/backend/ to the router
+RewriteRule ^(.*)$ index.php [QSA,L]
