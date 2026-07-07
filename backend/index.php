@@ -26,19 +26,19 @@ $routes = [
     'POST auth/register.php'    => 'handle_register',
 
     // Products
-    'GET  products/get.php'     => 'handle_products_get',
+    'GET products/get.php'      => 'handle_products_get',
     'POST products/save.php'    => 'handle_products_save',
     'POST products/delete.php'  => 'handle_products_delete',
 
     // Orders
-    'GET  orders/get.php'       => 'handle_orders_get',
+    'GET orders/get.php'        => 'handle_orders_get',
     'POST orders/create.php'    => 'handle_orders_create',
     'POST orders/update.php'    => 'handle_orders_update',
     'POST orders/cancel.php'    => 'handle_orders_cancel',
     'POST orders/delete.php'    => 'handle_orders_delete',
 
     // Users
-    'GET  users/get.php'        => 'handle_users_get',
+    'GET users/get.php'         => 'handle_users_get',
     'POST users/remove.php'     => 'handle_users_remove',
 ];
 
